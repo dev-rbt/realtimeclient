@@ -1,0 +1,354 @@
+[
+    {
+        "Query": "SELECT\n  p.* \nFROM\n  OrderPayments p WITH (NOLOCK)\nWHERE\n  p.PaymentKey IN(${parameters})",
+        "Key": "independent_payment_data",
+        "Name": "Bağımsız tahsilat verisi",
+        "TenantId": "tavuk",
+        "IntervalMs": 30000,
+        "Version": 1
+    },
+    {
+        "Query": "SELECT \n  h.BranchID,\n  h.OrderID,\n  h.OrderKey,\n  h.OrderDateTime,\n  h.StationID,\n  ROUND(ABS(h.AmountDue), 2) AS [AmountDue],\n  h.ReturnCustomerName AS [CustomerName],\n  h.ReturnCustomerAddress AS [Address],\n  h.ReturnTaxNumber AS [TaxNumber],\n  h.ReturnTaxOffice AS [TaxOffice],\n  h.ReturnSerialNo AS [SerialNo],\n  h.ReturnReason AS [Reason],\n  h.ReturnIsPaid AS [IsPaid],\n  '' AS [SplitHeader],\n  t.BranchID,\n  t.OrderID,\n  t.OrderKey,\n  t.TransactionKey,\n  t.MenuItemKey,\n  t.MenuItemText,\n  t.AccountingCode,\n  ROUND((ABS(t.ExtendedPrice) * 100 / (100 + t.TaxPercent)), 5) AS [Amount],\n  ROUND((ABS(t.ExtendedPrice) * t.TaxPercent / (100 + t.TaxPercent)), 5) AS [TaxAmount],\n  t.TaxPercent,\n  ABS(t.Quantity) AS [Quantity],\n  ABS(t.MenuItemUnitPrice) AS [UnitPrice],\n  ABS(t.ExtendedPrice) AS [ExtendedPrice],\n  t.MainMenuItemText,\n  t.MainMenuItemTransactionKey,\n  t.IsMainCombo,\n  ISNULL(t.OrderByWeight, 0) AS [OrderByWeight],\n  '' AS [SplitTransaction],\n  p.BranchID,\n  p.OrderID,\n  p.OrderKey,\n  p.PaymentKey,\n  p.PaymentMethodName,\n  p.GlobalBankName,\n  p.GlobalBankCode,\n  ABS(p.AmountPaid) AS [AmountPaid]\nFROM\n OrderHeaders h WITH (NOLOCK)\nLEFT JOIN OrderTransactions t WITH (NOLOCK) ON t.OrderKey = h.OrderKey AND t.LineDeleted = 0\nLEFT JOIN OrderPayments p WITH (NOLOCK) ON p.OrderKey = h.OrderKey AND p.LineDeleted = 0\nWHERE\n  h.OrderKey IN(${parameters})",
+        "Key": "return_data",
+        "Name": "İade verisi",
+        "TenantId": "tavuk",
+        "IntervalMs": 30000,
+        "Version": 1
+    },
+    {
+        "Query": "SELECT \n  s.*,\n  '' AS [SplitHeader],\n  si.*\nFROM\n posSheets s WITH ( NOLOCK ) \n LEFT JOIN posSheetItems si ON si.SheetKey = s.SheetKey\nWHERE\n  s.SheetKey IN(${parameters})",
+        "Key": "sheet_data",
+        "Name": "Föy verisi",
+        "TenantId": "tavuk",
+        "IntervalMs": 30000,
+        "Version": 1
+    },
+    {
+        "Query": "SELECT\n  z.* \nFROM\n  ZReports z WITH (NOLOCK)\nWHERE\n  z.ZReportKey IN(${parameters})",
+        "Key": "z_reports",
+        "Name": "Z Raporları",
+        "TenantId": "tavuk",
+        "IntervalMs": 30000,
+        "Version": 1
+    },
+    {
+        "Query": "SELECT\n  z.* \nFROM\n  ZReportDetails z WITH (NOLOCK)\nWHERE\n  z.ZReportDetailKey IN(${parameters})",
+        "Key": "z_reports_detailed",
+        "Name": "Z Raporları Detaylı",
+        "TenantId": "tavuk",
+        "IntervalMs": 30000,
+        "Version": 1
+    },
+    {
+        "Query": "SELECT\n  r.* \nFROM\n  RegisterSessions r WITH (NOLOCK) \nWHERE\n  r.RegisterSessionKey IN(${parameters})",
+        "Key": "cashier_login_logout",
+        "Name": "Kasiyer Giriş/Çıkışları",
+        "TenantId": "tavuk",
+        "IntervalMs": 30000,
+        "Version": 1
+    },
+    {
+        "Query": "SELECT\n  e.* \nFROM\n  Expenses e WITH (NOLOCK) \nWHERE\n  e.ExpenseKey IN(${parameters})",
+        "Key": "expenses",
+        "Name": "Masraflar",
+        "TenantId": "tavuk",
+        "IntervalMs": 30000,
+        "Version": 1
+    },
+    {
+        "Query": "SELECT\n  c.*,\n  \n  '' AS [SplitHeader],\n  \n  cp.*,\n  \n  '' AS [SplitPhone],\n  \n  ca.*,\n  \n  '' AS [SplitContact],\n  \n  cc.*,\n  \n  '' AS [SplitAddress],\n  \n  cf.*\nFROM\n  CustomerFiles c WITH (NOLOCK) \n  LEFT JOIN CustomerPhones cp WITH (NOLOCK) ON cp.CustomerKey = c.CustomerKey\n  LEFT JOIN CustomerAddresses ca WITH (NOLOCK) ON ca.CustomerKey = c.CustomerKey\n  LEFT JOIN CustomerContacts cc WITH (NOLOCK) ON cc.CustomerKey = c.CustomerKey\n  LEFT JOIN CustomerFeedback cf WITH (NOLOCK) ON cf.CustomerKey = c.CustomerKey\nWHERE\n  c.CustomerKey IN(${parameters})\n",
+        "Key": "customers_info",
+        "Name": "Müşteriler, Telefonları, Adresleri, Kontakları, Geribildirimleri",
+        "TenantId": "tavuk",
+        "IntervalMs": 30000,
+        "Version": 1
+    },
+    {
+        "Query": "SELECT\n  c.* \nFROM\n  CustomerCompanies c WITH (NOLOCK) \nWHERE\n  c.CompanyKey IN(${parameters})",
+        "Key": "customer_companies",
+        "Name": "Müşteri Firmaları",
+        "TenantId": "tavuk",
+        "IntervalMs": 30000,
+        "Version": 1
+    },
+    {
+        "Query": "SELECT\n  d.*,\n  \n  '' AS [SplitHeader],\n  \n  f.*\nFROM\n  Discounts d WITH (NOLOCK)\n  LEFT JOIN DiscountFilter f ON f.DiscountKey = d.DiscountKey\nWHERE\n  d.DiscountKey IN(${parameters})",
+        "Key": "discounts",
+        "Name": "İndirimler",
+        "TenantId": "tavuk",
+        "IntervalMs": 30000,
+        "Version": 1
+    },
+    {
+        "Query": "SELECT\n  e.* \nFROM\n  EmployeeTimeCards e WITH (NOLOCK) \nWHERE\n  e.TimeCardKey IN(${parameters})",
+        "Key": "employee_time_cards",
+        "Name": "Personel Zaman Kartları",
+        "TenantId": "tavuk",
+        "IntervalMs": 30000,
+        "Version": 1
+    },
+    {
+        "Query": "SELECT\n  g.* \nFROM\n  GmpEkuReports g WITH (NOLOCK) \nWHERE\n  g.GmpEkuReportKey IN(${parameters})",
+        "Key": "gmp_eku_records",
+        "Name": "GMP Eku Kayıtları",
+        "TenantId": "tavuk",
+        "IntervalMs": 30000,
+        "Version": 1
+    },
+    {
+        "Query": "SELECT\n  m.*,\n  '' AS [SplitMenu],\n  c.*,\n  '' AS [SplitCategory],\n  g.* \nFROM\n  MenuItems m WITH (NOLOCK)\n  LEFT JOIN MenuCategories c WITH (NOLOCK) ON c.MenuCategoryKey = m.MenuCategoryKey\n  LEFT JOIN MenuSubCategories g WITH (NOLOCK) ON g.MenuSubCategoryKey = m.MenuGroupKey\nWHERE\n  m.MenuItemKey IN(${parameters})",
+        "Key": "menu_categories_groups",
+        "Name": "Menü, Kategorileri, Grupları",
+        "TenantId": "tavuk",
+        "IntervalMs": 30000,
+        "Version": 1
+    },
+    {
+        "Query": "SELECT\n  e.*,\n  t.TitleName AS [JobTitleName]\nFROM\n  EmployeeFiles e WITH (NOLOCK) \n  LEFT JOIN EmployeeTitles t ON t.TitleID = e.JobTitleID\nWHERE\n  e.EmployeeKey IN(${parameters})",
+        "Key": "employees",
+        "Name": "Personeller",
+        "TenantId": "tavuk",
+        "IntervalMs": 30000,
+        "Version": 1
+    },
+    {
+        "Query": "SELECT\n  e.*\nFROM\n  EmployeeTitles e WITH (NOLOCK) \nWHERE\n  e.EmployeeTitlesKey IN(${parameters})",
+        "Key": "employee_titles",
+        "Name": "Personel Ünvanları",
+        "TenantId": "tavuk",
+        "IntervalMs": 30000,
+        "Version": 1
+    },
+    {
+        "Query": "SELECT\n  p.* \nFROM\n  PaymentMethods p WITH (NOLOCK) \nWHERE\n  p.PaymentMethodKey IN(${parameters})",
+        "Key": "payment_types",
+        "Name": "Ödeme Tipleri",
+        "TenantId": "tavuk",
+        "IntervalMs": 30000,
+        "Version": 1
+    },
+    {
+        "Query": "SELECT\n  g.*,\n  \n  '' AS [SplitTableGroup],\n  \n  t.*\nFROM\n  DineInTableGroups g WITH (NOLOCK) \n  LEFT JOIN DineInTables t WITH (NOLOCK) ON t.TableGroupKey =  g.TableGroupKey\nWHERE\n  g.TableGroupKey IN(${parameters})\n  OR t.DineInTableKey IN(${parameters})",
+        "Key": "table_groups_plans",
+        "Name": "Masa Grupları ve Planları",
+        "TenantId": "tavuk",
+        "IntervalMs": 30000,
+        "Version": 1
+    },
+    {
+        "Query": "SELECT\n  s.* \nFROM\n  StationSettings s WITH (NOLOCK) \nWHERE\n  s.StationKey IN(${parameters})",
+        "Key": "terminal_settings",
+        "Name": "Terminal Ayarları",
+        "TenantId": "tavuk",
+        "IntervalMs": 30000,
+        "Version": 1
+    },
+    {
+        "Query": "SELECT\n  s.* \nFROM\n  StationPrinterSettings s WITH (NOLOCK) \nWHERE\n  s.StationPrinterSettingsKey IN(${parameters})",
+        "Key": "terminal_printers",
+        "Name": "Terminal Yazıcıları",
+        "TenantId": "tavuk",
+        "IntervalMs": 30000,
+        "Version": 1
+    },
+    {
+        "Query": "SELECT\n  s.* \nFROM\n  StoreSettings s WITH (NOLOCK) \nWHERE\n  s.ParamKey IN(${parameters})",
+        "Key": "store_settings",
+        "Name": "İşletme Ayarları",
+        "TenantId": "tavuk",
+        "IntervalMs": 30000,
+        "Version": 1
+    },
+    {
+        "Query": "SELECT\n  c.*,\n  \n  '' AS [SplitCustomer],\n  \n  t.*\nFROM\n  BonusCustomerFiles c WITH (NOLOCK) \n  LEFT JOIN BonusTransactions t WITH (NOLOCK) ON t.CustomerKey = c.CustomerKey\nWHERE\n  c.CustomerKey IN(${parameters})",
+        "Key": "online_current_customers",
+        "Name": "Online Cari Müşterileri ve Hareketleri",
+        "TenantId": "tavuk",
+        "IntervalMs": 30000,
+        "Version": 1
+    },
+    {
+        "Query": "SELECT\n a.*\nFROM\n webBranchStatusLogs a WITH (NOLOCK)\nWHERE\n a.BranchStatusLogKey IN(${parameters})\n",
+        "Key": "marketplace_branch_status_logs",
+        "Name": "Pazaryeri Şube Durum Logları",
+        "TenantId": "tavuk",
+        "IntervalMs": 30000,
+        "Version": 1
+    },
+    {
+        "Query": "SELECT\n  h.*,\n  '' AS [SplitHeader],\n  t.*,\n  '' AS [SplitTransaction],\n  p.*\nFROM\n  webIntegrationOrderHeaders h WITH (NOLOCK)\n  LEFT JOIN webIntegrationOrderTransactions t WITH (NOLOCK) ON t.OrderKey = h.OrderKey\n  LEFT JOIN webIntegrationOrderPayments p WITH (NOLOCK) ON p.OrderKey = h.OrderKey\nWHERE\n  h.OrderKey IN(${parameters})",
+        "Key": "marketplace_order_intermediate",
+        "Name": "Pazaryeri Sipariş Ara Tablosu",
+        "TenantId": "tavuk",
+        "IntervalMs": 30000,
+        "Version": 1
+    },
+    {
+        "Query": "SELECT\n  b.* \nFROM\n  BarcodeScannerLog b WITH (NOLOCK) \nWHERE\n  b.BarcodeScanKey IN(${parameters})",
+        "Key": "barcode_scan_logs",
+        "Name": "Barkod okutmalarının logları",
+        "TenantId": "tavuk",
+        "IntervalMs": 30000,
+        "Version": 1
+    },
+    {
+        "Query": "SELECT\n  m.*,\n  '' AS [SplitMenu],\n  d.*\nFROM\n  MultiComboMenus m WITH (NOLOCK)\n  LEFT JOIN MultiComboMenuDetails d WITH (NOLOCK) ON d.MultiComboKey = m.MultiComboKey\nWHERE\n  m.MultiComboKey IN(${parameters})",
+        "Key": "local_multi_combo_menus",
+        "Name": "Lokal Multi Kombo Menüler",
+        "TenantId": "tavuk",
+        "IntervalMs": 30000,
+        "Version": 1
+    },
+    {
+        "Query": "SELECT\n  c.* \nFROM\n  HdHoldingCrmCustomers c WITH (NOLOCK) \nWHERE\n  c.OrderKey IN(${parameters})",
+        "Key": "hd_crm_customer_records",
+        "Name": "HD CRM Müşteri Kayıtları",
+        "TenantId": "tavuk",
+        "IntervalMs": 30000,
+        "Version": 1
+    },
+    {
+        "Query": "SELECT\n  a.* \nFROM\n  AuthorityList a WITH (NOLOCK) \nWHERE\n  a.AuthorityKey IN(${parameters})",
+        "Key": "local_authorities",
+        "Name": "Lokal Yetkiler",
+        "TenantId": "tavuk",
+        "IntervalMs": 30000,
+        "Version": 1
+    },
+    {
+        "Query": "SELECT\n  m.* \nFROM\n  MenuComboItems m WITH (NOLOCK) \nWHERE\n  m.ComboKey IN(${parameters})",
+        "Key": "local_combos",
+        "Name": "Lokal Kombolar",
+        "TenantId": "tavuk",
+        "IntervalMs": 30000,
+        "Version": 1
+    },
+    {
+        "Query": "SELECT\n  m.* \nFROM\n  MenuGroups m WITH (NOLOCK) \nWHERE\n  m.MenuGroupKey IN(${parameters})",
+        "Key": "local_menu_screen_groups",
+        "Name": "Lokal Menü Ekran Grupları",
+        "TenantId": "tavuk",
+        "IntervalMs": 30000,
+        "Version": 1
+    },
+    {
+        "Query": "SELECT\n  m.* \nFROM\n  MenuItemLayout m WITH (NOLOCK) \nWHERE\n  m.LayoutKey IN(${parameters})",
+        "Key": "local_menu_layouts",
+        "Name": "Lokal Menü Dizilimleri",
+        "TenantId": "tavuk",
+        "IntervalMs": 30000,
+        "Version": 1
+    },
+    {
+        "Query": "SELECT\n  m.* \nFROM\n  MenuCategories m WITH (NOLOCK) \nWHERE\n  m.MenuCategoryKey IN(${parameters})",
+        "Key": "local_menu_categories",
+        "Name": "Lokal Menü Kategorileri",
+        "TenantId": "tavuk",
+        "IntervalMs": 30000,
+        "Version": 1
+    },
+    {
+        "Query": "SELECT\n  m.* \nFROM\n  MenuSubCategories m WITH (NOLOCK) \nWHERE\n  m.MenuSubCategoryKey IN(${parameters})",
+        "Key": "local_menu_groups",
+        "Name": "Lokal Menü Grupları",
+        "TenantId": "tavuk",
+        "IntervalMs": 30000,
+        "Version": 1
+    },
+    {
+        "Query": "SELECT\n  m.* \nFROM\n  MenuModifierGroups m WITH (NOLOCK) \nWHERE\n  m.MenuModifierGroupKey IN(${parameters})",
+        "Key": "local_menu_message_groups",
+        "Name": "Lokal Menü Mesaj Grupları",
+        "TenantId": "tavuk",
+        "IntervalMs": 30000,
+        "Version": 1
+    },
+    {
+        "Query": "SELECT\n  m.* \nFROM\n  MenuModifierLayout m WITH (NOLOCK) \nWHERE\n  m.MenuModifierLayoutKey IN(${parameters})",
+        "Key": "local_menu_message_layouts",
+        "Name": "Lokal Menü Mesaj Dizilimleri",
+        "TenantId": "tavuk",
+        "IntervalMs": 30000,
+        "Version": 1
+    },
+    {
+        "Query": "SELECT\n  m.* \nFROM\n  MenuModifiers m WITH (NOLOCK) \nWHERE\n  m.MenuModifierKey IN(${parameters})",
+        "Key": "local_menu_messages",
+        "Name": "Lokal Menü Mesajları",
+        "TenantId": "tavuk",
+        "IntervalMs": 30000,
+        "Version": 1
+    },
+    {
+        "Query": "SELECT\n  m.* \nFROM\n  MenuItemTaxs m WITH (NOLOCK) \nWHERE\n  m.MenuItemTaxKey IN(${parameters})",
+        "Key": "local_menu_tax_definitions",
+        "Name": "Lokal Menü Kdv Tanımları",
+        "TenantId": "tavuk",
+        "IntervalMs": 30000,
+        "Version": 1
+    },
+    {
+        "Query": "SELECT\n  m.* \nFROM\n  webIntegrationApplications m WITH (NOLOCK) \nWHERE\n  m.IntegrationId IN(${parameters})",
+        "Key": "local_integration_applications",
+        "Name": "Lokal Entegrasyon Uygulamaları (Pazaryeri)",
+        "TenantId": "tavuk",
+        "IntervalMs": 30000,
+        "Version": 1
+    },
+    {
+        "Query": "SELECT\n  m.* \nFROM\n  webIntegrationProducts m WITH (NOLOCK) \nWHERE\n  m.ProductKey IN(${parameters})",
+        "Key": "local_integration_products",
+        "Name": "Lokal Entegrasyon Ürünleri (Pazaryeri)",
+        "TenantId": "tavuk",
+        "IntervalMs": 30000,
+        "Version": 1
+    },
+    {
+        "Query": "SELECT\n  m.* \nFROM\n  webIntegrationSettings m WITH (NOLOCK) \nWHERE\n  m.ParamKey IN(${parameters})",
+        "Key": "local_integration_settings",
+        "Name": "Lokal Entegrasyon Ayarları (Pazaryeri)",
+        "TenantId": "tavuk",
+        "IntervalMs": 30000,
+        "Version": 1
+    },
+    {
+        "Query": "SELECT\n  m.* \nFROM\n  ProductStatusLog m WITH (NOLOCK) \nWHERE\n  m.ProductStatusLogKey IN(${parameters})",
+        "Key": "product_status_logs",
+        "Name": "Ürün Açık/Kapalı Durumları (Pazaryeri)",
+        "TenantId": "tavuk",
+        "IntervalMs": 30000,
+        "Version": 1
+    },
+    {
+        "Query": "SELECT\n  m.* \nFROM\n  EmployeeBreakCards m WITH (NOLOCK) \nWHERE\n  m.EmployeeBreakCardsKey IN(${parameters})",
+        "Key": "employee_break_tracking",
+        "Name": "Personel Mola Takibi",
+        "TenantId": "tavuk",
+        "IntervalMs": 30000,
+        "Version": 1
+    },
+    {
+        "Query": "SELECT\n  p.[Id] AS [AutoID],\n  p.[Key] AS [PersonalKey],\n  p.NameSurname AS [NameSurname],\n  p.CardNumber AS [CardNumber],\n  p.RegistrationNumber AS [RegistrationNumber],\n  p.IsActive AS [IsActive],\n  c.Name AS [CompanyName],\n  po.Name AS [PouchName],\n  pp.Total AS [PouchTotal],\n  ISNULL(SUM(CASE WHEN t.Amount > 0 THEN t.Amount ELSE 0 END),0) AS [TopUpTotal],\n  ISNULL(SUM(CASE WHEN t.Amount < 0 THEN ABS(t.Amount) ELSE 0 END),0) AS [SpendTotal]\nFROM\n  ISS_TEKFEN.dbo.Personals p WITH (NOLOCK)\n  INNER JOIN ISS_TEKFEN.dbo.PersonalPouches pp WITH (NOLOCK) ON pp.[PersonalKey] = p.[Key]\n  INNER JOIN ISS_TEKFEN.dbo.Pouches po WITH (NOLOCK) ON po.[Key] = pp.[PouchKey]\n  INNER JOIN ISS_TEKFEN.dbo.Companies c WITH (NOLOCK) ON c.[Key] = p.[CompanyKey]\n  LEFT JOIN ISS_TEKFEN.dbo.Transactions t WITH (NOLOCK) ON t.[PersonalKey] = p.[Key] AND t.[PouchKey] = pp.[PouchKey] AND t.[Status] = 1\nWHERE\n   p.[Key] IN(${parameters})\nGROUP BY\n    p.[Id],\n    p.[Key],\n    p.NameSurname,\n    p.CardNumber,\n    p.RegistrationNumber,\n    p.IsActive,\n    c.Name,\n    po.Name,\n    pp.Total",
+        "Key": "tekfen_employees",
+        "Name": "Tekfen Personelleri",
+        "TenantId": "tavuk",
+        "IntervalMs": 30000,
+        "Version": 1
+    },
+    {
+        "Query": "SELECT\n  m.* \nFROM\n  webIntegrationMarketPlaceAllProduct m WITH (NOLOCK) \nWHERE\n  m.MarketPlaceAllProductKey IN(${parameters})",
+        "Key": "local_all_products",
+        "Name": "Lokal Tüm Ürünler (Pazaryeri)",
+        "TenantId": "tavuk",
+        "IntervalMs": 30000,
+        "Version": 1
+    },
+    {
+        "Query": "SELECT\n  m.* \nFROM\n  webIntegrationOrderStatus m WITH (NOLOCK) \nWHERE\n  m.OrderKey IN(${parameters})",
+        "Key": "order_statuses",
+        "Name": "Sipariş Durumları (Pazaryeri)",
+        "TenantId": "tavuk",
+        "IntervalMs": 30000,
+        "Version": 1
+    }
+]
