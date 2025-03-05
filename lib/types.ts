@@ -51,12 +51,12 @@ export interface SystemMetrics {
   networkSent: number;
 }
 
-interface TotalCount {
+export interface TotalCount {
   count: number;
   size: number;
 }
 
-interface ReportData {
+export interface ReportData {
   reportName: string;
   totalSuccess: TotalCount;
   totalProcessing: TotalCount;
@@ -64,7 +64,7 @@ interface ReportData {
   totalIgnore: TotalCount;
 }
 
-interface BranchData {
+export interface BranchData {
   branchId: number;
   isActive: boolean;
   reports: ReportData[];
@@ -74,7 +74,7 @@ interface BranchData {
   totalIgnore: TotalCount;
 }
 
-interface TenantData {
+export interface TenantData {
   activeBranches: number;
   passiveBranches: number;
   databaseConnection: boolean;

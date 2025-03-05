@@ -15,18 +15,46 @@ const formatBytes = (bytes: number) => {
   return `${mbValue.toFixed(2)} MB`;
 };
 
-const columns: ColumnDef<BranchData>[] = [
+// Extended BranchData type to include tenant information
+interface ExtendedBranchData extends BranchData {
+  tenantId: string;
+}
+
+const columns: ColumnDef<ExtendedBranchData>[] = [
+  {
+    accessorKey: 'tenantId',
+    header: ({ column }) => {
+      return (
+        <div className="text-left w-full">
+          <Button
+            variant="ghost"
+            onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
+            className="!justify-start p-0 w-full"
+          >
+            Firma Kısa Kod
+            <ArrowUpDown className="ml-2 h-4 w-4" />
+          </Button>
+        </div>
+      );
+    },
+    cell: ({ row }) => {
+      return row.getValue('tenantId');
+    },
+  },
   {
     accessorKey: 'branchId',
     header: ({ column }) => {
       return (
-        <Button
-          variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
-        >
-          Şube ID
-          <ArrowUpDown className="ml-2 h-4 w-4" />
-        </Button>
+        <div className="text-left w-full">
+          <Button
+            variant="ghost"
+            onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
+            className="!justify-start p-0 w-full"
+          >
+            Şube ID
+            <ArrowUpDown className="ml-2 h-4 w-4" />
+          </Button>
+        </div>
       );
     },
     cell: ({ row }) => {
@@ -58,13 +86,16 @@ const columns: ColumnDef<BranchData>[] = [
     accessorKey: 'totalSuccess',
     header: ({ column }) => {
       return (
-        <Button
-          variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
-        >
-          Başarılı
-          <ArrowUpDown className="ml-2 h-4 w-4" />
-        </Button>
+        <div className="text-left w-full">
+          <Button
+            variant="ghost"
+            onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
+            className="!justify-start p-0 w-full"
+          >
+            Başarılı
+            <ArrowUpDown className="ml-2 h-4 w-4" />
+          </Button>
+        </div>
       );
     },
     cell: ({ row }) => {
@@ -76,13 +107,16 @@ const columns: ColumnDef<BranchData>[] = [
     accessorKey: 'totalError',
     header: ({ column }) => {
       return (
-        <Button
-          variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
-        >
-          Hatalı
-          <ArrowUpDown className="ml-2 h-4 w-4" />
-        </Button>
+        <div className="text-left w-full">
+          <Button
+            variant="ghost"
+            onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
+            className="!justify-start p-0 w-full"
+          >
+            Hatalı
+            <ArrowUpDown className="ml-2 h-4 w-4" />
+          </Button>
+        </div>
       );
     },
     cell: ({ row }) => {
@@ -94,13 +128,16 @@ const columns: ColumnDef<BranchData>[] = [
     accessorKey: 'totalProcessing',
     header: ({ column }) => {
       return (
-        <Button
-          variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
-        >
-          İşleniyor
-          <ArrowUpDown className="ml-2 h-4 w-4" />
-        </Button>
+        <div className="text-left w-full">
+          <Button
+            variant="ghost"
+            onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
+            className="!justify-start p-0 w-full"
+          >
+            İşleniyor
+            <ArrowUpDown className="ml-2 h-4 w-4" />
+          </Button>
+        </div>
       );
     },
     cell: ({ row }) => {
@@ -112,13 +149,16 @@ const columns: ColumnDef<BranchData>[] = [
     accessorKey: 'totalIgnore',
     header: ({ column }) => {
       return (
-        <Button
-          variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
-        >
-          Yoksayılan
-          <ArrowUpDown className="ml-2 h-4 w-4" />
-        </Button>
+        <div className="text-left w-full">
+          <Button
+            variant="ghost"
+            onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
+            className="!justify-start p-0 w-full"
+          >
+            Yoksayılan
+            <ArrowUpDown className="ml-2 h-4 w-4" />
+          </Button>
+        </div>
       );
     },
     cell: ({ row }) => {
@@ -139,11 +179,14 @@ export function RestaurantsTable() {
   const branches = useMemo(() => {
     if (!metrics) return [];
     
-    const allBranches: BranchData[] = [];
+    const allBranches: ExtendedBranchData[] = [];
     
-    Object.values(metrics.tenants).forEach(tenant => {
+    Object.entries(metrics.tenants).forEach(([tenantId, tenant]) => {
       tenant.branches.forEach(branch => {
-        allBranches.push(branch);
+        allBranches.push({
+          ...branch,
+          tenantId
+        });
       });
     });
     
@@ -162,7 +205,8 @@ export function RestaurantsTable() {
   const searchFilteredBranches = useMemo(() => {
     if (!searchValue) return filteredBranches;
     return filteredBranches.filter(branch => 
-      String(branch.branchId).includes(searchValue)
+      String(branch.branchId).includes(searchValue) || 
+      branch.tenantId.toLowerCase().includes(searchValue.toLowerCase())
     );
   }, [filteredBranches, searchValue]);
 
@@ -178,27 +222,28 @@ export function RestaurantsTable() {
   return (
     <div className="space-y-4">
       <div className="flex flex-col sm:flex-row gap-2 sm:items-center justify-between">
-        <div className="flex gap-2">
+        <div className="flex gap-2 border rounded-md p-1 bg-muted/20">
           <Button 
-            variant={activeFilter === 'all' ? 'default' : 'outline'} 
+            variant="ghost"
             onClick={() => setActiveFilter('all')}
             size="sm"
+            className={`${activeFilter === 'all' ? 'bg-primary text-primary-foreground' : 'hover:bg-muted'}`}
           >
             Tümü
           </Button>
           <Button 
-            variant={activeFilter === 'active' ? 'default' : 'outline'} 
+            variant="ghost"
             onClick={() => setActiveFilter('active')}
             size="sm"
-            className="bg-green-500 hover:bg-green-600 text-white"
+            className={`${activeFilter === 'active' ? 'bg-green-500 text-white' : 'hover:bg-muted'}`}
           >
             Sadece Aktif Şubeler
           </Button>
           <Button 
-            variant={activeFilter === 'passive' ? 'default' : 'outline'} 
+            variant="ghost"
             onClick={() => setActiveFilter('passive')}
             size="sm"
-            className="bg-red-500 hover:bg-red-600 text-white"
+            className={`${activeFilter === 'passive' ? 'bg-red-500 text-white' : 'hover:bg-muted'}`}
           >
             Sadece Pasif Şubeler
           </Button>
@@ -206,7 +251,7 @@ export function RestaurantsTable() {
         
         <div className="relative w-full sm:w-auto max-w-sm">
           <Input
-            placeholder="Şube ID ara..."
+            placeholder="Şube ID veya Tenant ara..."
             value={searchValue}
             onChange={(e) => setSearchValue(e.target.value)}
             className="glass"

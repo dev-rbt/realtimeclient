@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Search, Building2, CheckCircle2, XCircle, Clock, Database, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Search, Building2, CheckCircle2, XCircle, Clock, Database, ChevronLeft, ChevronRight, EyeOff } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { DocumentMetricsResponse } from '@/lib/types';
@@ -104,7 +104,7 @@ function CompanyCard({ companyCode, data }: CompanyCardProps) {
   return (
     <Dialog>
       <DialogTrigger asChild>
-        <Card className="relative overflow-hidden bg-gradient-to-br from-card to-card/80 shadow-lg hover:shadow-xl transition-all duration-300">
+        <Card className="relative overflow-hidden bg-gradient-to-br from-card to-card/80 shadow-lg hover:shadow-xl transition-all duration-300 cursor-pointer hover:scale-[1.02] transform">
           <div className="absolute top-0 right-0 w-32 h-32 bg-blue-500/5 rounded-full -translate-y-16 translate-x-16" />
           <div className="absolute bottom-0 left-0 w-24 h-24 bg-blue-500/5 rounded-full translate-y-12 -translate-x-12" />
           
@@ -149,10 +149,10 @@ function CompanyCard({ companyCode, data }: CompanyCardProps) {
               </div>
 
               {/* Right side - Transaction Stats */}
-              <div className="flex flex-col justify-between py-1 min-w-[140px] space-y-2">
-                <div className="flex items-center gap-3 bg-gradient-to-r from-green-50 to-transparent p-2 rounded-l-full hover:from-green-100 transition-colors">
-                  <div className="bg-white/80 p-1.5 rounded-full shadow-sm">
-                    <CheckCircle2 className="h-5 w-5 text-green-500" />
+              <div className="grid grid-cols-2 gap-2 py-1 min-w-[280px]">
+                <div className="flex items-center gap-2 bg-gradient-to-r from-green-50 to-transparent p-1.5 rounded-l-full hover:from-green-100 transition-colors">
+                  <div className="bg-white/80 p-1 rounded-full shadow-sm">
+                    <CheckCircle2 className="h-4 w-4 text-green-500" />
                   </div>
                   <div>
                     <p className="text-xs font-medium text-green-600/80">Başarılı</p>
@@ -160,9 +160,9 @@ function CompanyCard({ companyCode, data }: CompanyCardProps) {
                   </div>
                 </div>
                 
-                <div className="flex items-center gap-3 bg-gradient-to-r from-red-50 to-transparent p-2 rounded-l-full hover:from-red-100 transition-colors">
-                  <div className="bg-white/80 p-1.5 rounded-full shadow-sm">
-                    <XCircle className="h-5 w-5 text-red-500" />
+                <div className="flex items-center gap-2 bg-gradient-to-r from-red-50 to-transparent p-1.5 rounded-l-full hover:from-red-100 transition-colors">
+                  <div className="bg-white/80 p-1 rounded-full shadow-sm">
+                    <XCircle className="h-4 w-4 text-red-500" />
                   </div>
                   <div>
                     <p className="text-xs font-medium text-red-600/80">Başarısız</p>
@@ -170,13 +170,23 @@ function CompanyCard({ companyCode, data }: CompanyCardProps) {
                   </div>
                 </div>
                 
-                <div className="flex items-center gap-3 bg-gradient-to-r from-orange-50 to-transparent p-2 rounded-l-full hover:from-orange-100 transition-colors">
-                  <div className="bg-white/80 p-1.5 rounded-full shadow-sm">
-                    <Clock className="h-5 w-5 text-orange-500" />
+                <div className="flex items-center gap-2 bg-gradient-to-r from-orange-50 to-transparent p-1.5 rounded-l-full hover:from-orange-100 transition-colors">
+                  <div className="bg-white/80 p-1 rounded-full shadow-sm">
+                    <Clock className="h-4 w-4 text-orange-500" />
                   </div>
                   <div>
                     <p className="text-xs font-medium text-orange-600/80">İşlenen</p>
                     <p className="text-lg font-bold text-orange-700">{data.totalProcessing.count}</p>
+                  </div>
+                </div>
+                
+                <div className="flex items-center gap-2 bg-gradient-to-r from-blue-50 to-transparent p-1.5 rounded-l-full hover:from-blue-100 transition-colors">
+                  <div className="bg-white/80 p-1 rounded-full shadow-sm">
+                    <EyeOff className="h-4 w-4 text-blue-500" />
+                  </div>
+                  <div>
+                    <p className="text-xs font-medium text-blue-600/80">Yoksayılan</p>
+                    <p className="text-lg font-bold text-blue-700">{data.totalIgnore.count}</p>
                   </div>
                 </div>
               </div>

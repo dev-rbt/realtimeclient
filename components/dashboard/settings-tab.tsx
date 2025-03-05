@@ -3,13 +3,16 @@ import { SettingsIcon, ServerIcon, PlusIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { useToast } from '@/components/ui/use-toast';
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import useApi from '@/hooks/use-api';
 import ConnectionForm from '@/components/dashboard/settings/connection-form';
 import ConnectionTable from '@/components/dashboard/settings/connection-table';
 import ConnectionTestDialog from '@/components/dashboard/settings/connection-test-dialog';
 import DeleteDialog from '@/components/dashboard/settings/delete-dialog';
-import { SqlConnection, TestResult } from '@/components/dashboard/settings/types';
+import { TestResult } from '@/components/dashboard/settings/types';
+import { SqlConnection } from '@/store/useConnectionsStore';
+import { useConnections } from '@/hooks/useConnections';
+import { useConnectionsStore } from '@/store/useConnectionsStore';
 
 const emptyConnection: SqlConnection = {
   id: '',
@@ -26,7 +29,8 @@ const emptyConnection: SqlConnection = {
 };
 
 export function SettingsTab() {
-  const [connections, setConnections] = useState<SqlConnection[]>([]);
+  const { connections } = useConnections();
+  const { fetchConnections } = useConnectionsStore();
   const [editingConnection, setEditingConnection] = useState<SqlConnection | null>(null);
   const [testResult, setTestResult] = useState<TestResult | null>(null);
   const [isTestingConnection, setIsTestingConnection] = useState<string | null>(null);
@@ -35,37 +39,19 @@ export function SettingsTab() {
   const { toast } = useToast();
   const api = useApi();
 
-  useEffect(() => {
-    const fetchConnections = async () => {
-      try {
-        const response = await api.get<SqlConnection[]>('/connection');
-        setConnections(response.data);
-      } catch (error: any) {
-        toast({
-          title: "Hata",
-          description: error.response?.data?.message || "Bağlantılar yüklenirken bir hata oluştu.",
-          variant: "destructive"
-        });
-      }
-    };
-
-    fetchConnections();
-  }, [api, toast]);
-
   const handleSave = async (connection: SqlConnection) => {
     try {
       let response;
       if (connection.id) {
         response = await api.put('/connection', connection);
-        setConnections(connections.map(conn =>
-          conn.id === connection.id ? { ...connection, ...response.data } : conn
-        ));
       } else {
         response = await api.post('/connection', connection);
-        setConnections([...connections, response.data]);
       }
 
       setEditingConnection(null);
+      // Refresh connections from the store after saving
+      await fetchConnections();
+      
       toast({
         title: "Başarılı",
         description: "SQL Server bağlantısı kaydedildi.",
@@ -115,8 +101,11 @@ export function SettingsTab() {
     setIsDeleting(true);
     try {
       await api.delete(`/connection/${deletingConnection.id}`);
-      setConnections(connections.filter(conn => conn.id !== deletingConnection.id));
       setDeletingConnection(null);
+      
+      // Refresh connections from the store after deleting
+      await fetchConnections();
+      
       toast({
         title: "Başarılı",
         description: "SQL Server bağlantısı silindi.",

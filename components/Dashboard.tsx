@@ -12,12 +12,15 @@ import { AuditTab } from './dashboard/audit-tab';
 import { SettingsTab } from './dashboard/settings-tab';
 import { QueriesTab } from './dashboard/queries-tab';
 import { CompanyCards } from "./dashboard/company-cards";
+import { SystemLogs } from './dashboard/system-logs';
+import { useMetricsStore } from '@/store/useMetricsStore';
 
 export default function Dashboard({metrics, error}: {metrics: SystemMetrics | null, error: string | null}) {
   const [restaurants, setRestaurants] = useState<Restaurant[]>([]);
   const [recentSyncs, setRecentSyncs] = useState<SyncData[]>([]);
   const [databases, setDatabases] = useState<DatabaseConnection[]>([]);
   const [auditLogs, setAuditLogs] = useState<AuditLog[]>([]);
+  const { lastUpdated } = useMetricsStore();
 
   // SignalR bağlantı durumunu kontrol edelim
   useEffect(() => {
@@ -60,72 +63,76 @@ export default function Dashboard({metrics, error}: {metrics: SystemMetrics | nu
 
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background to-muted p-8">
-      <div className="max-w-7xl mx-auto space-y-8">
-        <div className="flex justify-between items-center bg-card/50 backdrop-blur-sm p-6 rounded-2xl shadow-lg">
-          <div>
-            <h1 className="text-4xl font-bold bg-gradient-to-r from-primary to-blue-600 bg-clip-text text-transparent">
-              RobotPOS Real Time Client Center
-            </h1>
-            <p className="text-muted-foreground mt-2">Gerçek zamanlı sistem monitörü</p>
+    <div className="h-screen overflow-hidden flex">
+      {/* Main Content */}
+      <div className="flex-1 overflow-auto bg-gradient-to-br from-background to-muted px-8">
+        <div className="mx-auto h-full flex flex-col">
+          <div className="bg-card/50 backdrop-blur-sm p-6 rounded-2xl shadow-lg mb-6">
+            <div className="flex justify-between items-center">
+              <div>
+                <h1 className="text-4xl font-bold bg-gradient-to-r from-primary to-blue-600 bg-clip-text text-transparent">
+                  RobotPOS Real Time Client Center
+                </h1>
+                <p className="text-muted-foreground mt-2">Gerçek zamanlı sistem monitörü</p>
+              </div>
+              <div className="text-sm text-muted-foreground bg-background/50 px-4 py-2 rounded-full">
+                Son Güncelleme: {lastUpdated}
+              </div>
+            </div>
           </div>
-          <div className="text-sm text-muted-foreground bg-background/50 px-4 py-2 rounded-full">
-            Son Güncelleme: 
+
+          <div className="flex-1 overflow-hidden">
+            <Tabs defaultValue="overview" className="h-full flex flex-col">
+              <TabsList className="grid w-full grid-cols-4 lg:grid-cols-7 bg-card/50 backdrop-blur-sm p-1 rounded-xl">
+                <TabsTrigger value="overview">Genel Bakış</TabsTrigger>
+                <TabsTrigger value="branches">Şubeler</TabsTrigger>
+                {/* <TabsTrigger value="databases">Veritabanları</TabsTrigger>
+                <TabsTrigger value="sync">Senkronizasyon</TabsTrigger>
+                <TabsTrigger value="audit">İşlem Kayıtları</TabsTrigger> */}
+                <TabsTrigger value="queries">Sorgular</TabsTrigger>
+                <TabsTrigger value="settings">Ayarlar</TabsTrigger>
+              </TabsList>
+
+              <div className="flex-1 overflow-auto mt-6">
+                <TabsContent value="overview" className="h-full overflow-auto m-0">
+                  <div className="space-y-6">
+                    <OverviewCards
+                      metrics={metrics}
+                      lastSyncDate={recentSyncs[0]?.timestamp.toLocaleTimeString()}  
+                      totalRestaurantCount={restaurants.length}
+                      activeRestaurantCount={restaurants.filter(r => r.status === 'active').length}
+                      passiveRestaurantCount={restaurants.filter(r => r.status === 'idle').length}
+                    />
+                    <CompanyCards />
+                  </div>
+                </TabsContent>
+                <TabsContent value="branches" className="h-full overflow-auto m-0">
+                  <RestaurantsTable />
+                </TabsContent>
+                {/* <TabsContent value="databases" className="h-full overflow-auto m-0">
+                  <DatabasesTab databases={databases} />
+                </TabsContent>
+                <TabsContent value="sync" className="h-full overflow-auto m-0">
+                  <SyncTab recentSyncs={recentSyncs} />
+                </TabsContent>
+                <TabsContent value="audit" className="h-full overflow-auto m-0">
+                  <AuditTab logs={auditLogs} />
+                </TabsContent> */}
+                <TabsContent value="queries" className="h-full overflow-auto m-0">
+                  <QueriesTab />
+                </TabsContent>
+                <TabsContent value="settings" className="h-full overflow-auto m-0">
+                  <SettingsTab />
+                </TabsContent>
+              </div>
+            </Tabs>
           </div>
         </div>
+      </div>
 
-        <Tabs defaultValue="overview" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-4 lg:grid-cols-7 bg-card/50 backdrop-blur-sm p-1 rounded-xl">
-            <TabsTrigger value="overview">Genel Bakış</TabsTrigger>
-            <TabsTrigger value="branches">Şubeler</TabsTrigger>
-            {/* <TabsTrigger value="databases">Veritabanları</TabsTrigger>
-            <TabsTrigger value="sync">Senkronizasyon</TabsTrigger>
-            <TabsTrigger value="audit">İşlem Kayıtları</TabsTrigger> */}
-            <TabsTrigger value="queries">Sorgular</TabsTrigger>
-            <TabsTrigger value="settings">Ayarlar</TabsTrigger>
-          </TabsList>
-
-          <TabsContent value="overview">
-            <div className="space-y-6">
-              <OverviewCards
-                metrics={metrics}
-                lastSyncDate={recentSyncs[0]?.timestamp.toLocaleTimeString()}  
-                totalRestaurantCount={restaurants.length}
-                activeRestaurantCount={restaurants.filter(r => r.status === 'active').length}
-                passiveRestaurantCount={restaurants.filter(r => r.status === 'idle').length}
-                databaseCount={databases.length}
-              />
-
-              <CompanyCards />
-
-
-            </div>
-          </TabsContent>
-
-          <TabsContent value="branches">
-            <RestaurantsTable />
-          </TabsContent>
-
-          {/* <TabsContent value="databases">
-            <DatabasesTab databases={databases} />
-          </TabsContent>
-
-          <TabsContent value="sync">
-            <SyncTab recentSyncs={recentSyncs} />
-          </TabsContent>
-
-        
-
-          <TabsContent value="audit">
-            <AuditTab logs={auditLogs} />
-          </TabsContent> */}
-  <TabsContent value="queries">
-            <QueriesTab />
-          </TabsContent>
-          <TabsContent value="settings">
-            <SettingsTab />
-          </TabsContent>
-        </Tabs>
+      {/* System Logs - Right Side */}
+      <div className="w-[350px] bg-card/50 backdrop-blur-sm shadow-lg overflow-hidden flex flex-col h-screen border-l">
+        <SystemLogs />
       </div>
     </div>
   );
