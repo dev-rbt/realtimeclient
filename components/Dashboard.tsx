@@ -78,9 +78,9 @@ export default function Dashboard({metrics, error}: {metrics: SystemMetrics | nu
           <TabsList className="grid w-full grid-cols-4 lg:grid-cols-7 bg-card/50 backdrop-blur-sm p-1 rounded-xl">
             <TabsTrigger value="overview">Genel Bakış</TabsTrigger>
             <TabsTrigger value="branches">Şubeler</TabsTrigger>
-            <TabsTrigger value="databases">Veritabanları</TabsTrigger>
+            {/* <TabsTrigger value="databases">Veritabanları</TabsTrigger>
             <TabsTrigger value="sync">Senkronizasyon</TabsTrigger>
-            <TabsTrigger value="audit">İşlem Kayıtları</TabsTrigger>
+            <TabsTrigger value="audit">İşlem Kayıtları</TabsTrigger> */}
             <TabsTrigger value="queries">Sorgular</TabsTrigger>
             <TabsTrigger value="settings">Ayarlar</TabsTrigger>
           </TabsList>
@@ -103,10 +103,10 @@ export default function Dashboard({metrics, error}: {metrics: SystemMetrics | nu
           </TabsContent>
 
           <TabsContent value="branches">
-            <RestaurantsTable data={restaurants} />
+            <RestaurantsTable />
           </TabsContent>
 
-          <TabsContent value="databases">
+          {/* <TabsContent value="databases">
             <DatabasesTab databases={databases} />
           </TabsContent>
 
@@ -114,14 +114,14 @@ export default function Dashboard({metrics, error}: {metrics: SystemMetrics | nu
             <SyncTab recentSyncs={recentSyncs} />
           </TabsContent>
 
-          <TabsContent value="queries">
-            <QueriesTab />
-          </TabsContent>
+        
 
           <TabsContent value="audit">
             <AuditTab logs={auditLogs} />
+          </TabsContent> */}
+  <TabsContent value="queries">
+            <QueriesTab />
           </TabsContent>
-
           <TabsContent value="settings">
             <SettingsTab />
           </TabsContent>

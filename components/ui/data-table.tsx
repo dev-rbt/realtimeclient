@@ -11,6 +11,8 @@ import {
   getPaginationRowModel,
   getSortedRowModel,
   useReactTable,
+  FilterFn,
+  Table as TableInstance,
 } from '@tanstack/react-table';
 
 import {
@@ -31,6 +33,7 @@ interface DataTableProps<TData, TValue> {
   data: TData[];
   searchColumn?: string;
   searchPlaceholder?: string;
+  table?: TableInstance<TData>;
 }
 
 export function DataTable<TData, TValue>({
@@ -38,11 +41,12 @@ export function DataTable<TData, TValue>({
   data,
   searchColumn,
   searchPlaceholder = 'Ara...',
+  table: externalTable,
 }: DataTableProps<TData, TValue>) {
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([]);
 
-  const table = useReactTable({
+  const table = externalTable || useReactTable({
     data,
     columns,
     getCoreRowModel: getCoreRowModel(),
@@ -55,18 +59,23 @@ export function DataTable<TData, TValue>({
       sorting,
       columnFilters,
     },
+    enableColumnFilters: true,
   });
 
   return (
     <div className="space-y-4">
-      {searchColumn && (
+      {!externalTable && searchColumn && (
         <div className="flex items-center">
           <Input
             placeholder={searchPlaceholder}
             value={(table.getColumn(searchColumn)?.getFilterValue() as string) ?? ''}
-            onChange={(event) =>
-              table.getColumn(searchColumn)?.setFilterValue(event.target.value)
-            }
+            onChange={(event) => {
+              const column = table.getColumn(searchColumn);
+              if (column) {
+                const value = event.target.value;
+                column.setFilterValue(value);
+              }
+            }}
             className="max-w-sm glass"
           />
         </div>
