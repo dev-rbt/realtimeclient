@@ -205,6 +205,18 @@ function CompanyCard({ companyCode, data }: CompanyCardProps) {
                     <p className="text-lg font-bold text-blue-700">{data.totalIgnore.count}</p>
                   </div>
                 </div>
+                
+                <div className="col-span-2 flex items-center gap-2 bg-gradient-to-r from-gray-50 to-transparent p-1.5 rounded-l-full hover:from-gray-100 transition-colors mt-2 border-t pt-3">
+                  <div className="bg-white/80 p-1 rounded-full shadow-sm">
+                    <Database className="h-4 w-4 text-gray-700" />
+                  </div>
+                  <div>
+                    <p className="text-xs font-medium text-gray-600/80">Toplam</p>
+                    <p className="text-lg font-bold text-gray-700">
+                      {data.totalSuccess.count + data.totalError.count + data.totalProcessing.count + data.totalPending.count + data.totalIgnore.count}
+                    </p>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
