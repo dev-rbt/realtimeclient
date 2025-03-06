@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev --hostname 0.0.0.0 -p 3010",
+    "dev": "next dev --hostname 0.0.0.0 -p 3020",
     "prebuild": "next telemetry disable",
     "copy-files": "node scripts/copy-files.js",
     "build": "npm run prebuild && next build && npm run copy-files",

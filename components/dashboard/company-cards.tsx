@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Search, Building2, CheckCircle2, XCircle, Clock, Database, ChevronLeft, ChevronRight, EyeOff } from 'lucide-react';
+import { Search, Building2, CheckCircle2, XCircle, Clock, Database, ChevronLeft, ChevronRight, EyeOff, AlertCircle } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { DocumentMetricsResponse } from '@/lib/types';
@@ -33,7 +33,8 @@ function CompanyCard({ companyCode, data }: CompanyCardProps) {
       success: { count: 0, size: 0 },
       error: { count: 0, size: 0 },
       processing: { count: 0, size: 0 },
-      ignore: { count: 0, size: 0 }
+      ignore: { count: 0, size: 0 },
+      pending: { count: 0, size: 0 }
     };
     
     data.branches.forEach(branch => {
@@ -47,6 +48,8 @@ function CompanyCard({ companyCode, data }: CompanyCardProps) {
         metrics.processing.size += report.totalProcessing.size;
         metrics.ignore.count += report.totalIgnore.count;
         metrics.ignore.size += report.totalIgnore.size;
+        metrics.pending.count += report.totalPending.count;
+        metrics.pending.size += report.totalPending.size;
       }
     });
     
@@ -56,7 +59,8 @@ function CompanyCard({ companyCode, data }: CompanyCardProps) {
     success: { count: number, size: number },
     error: { count: number, size: number },
     processing: { count: number, size: number },
-    ignore: { count: number, size: number }
+    ignore: { count: number, size: number },
+    pending: { count: number, size: number }
   }>);
 
   // Prepare branch data for table
@@ -73,7 +77,8 @@ function CompanyCard({ companyCode, data }: CompanyCardProps) {
       success: branch.totalSuccess,
       error: branch.totalError,
       processing: branch.totalProcessing,
-      ignore: branch.totalIgnore
+      ignore: branch.totalIgnore,
+      pending: branch.totalPending
     };
   }).filter(Boolean) as Array<{
     branchId: number;
@@ -82,6 +87,7 @@ function CompanyCard({ companyCode, data }: CompanyCardProps) {
     error: { count: number, size: number };
     processing: { count: number, size: number };
     ignore: { count: number, size: number };
+    pending: { count: number, size: number };
   }>;
 
   // Pagination
@@ -180,6 +186,16 @@ function CompanyCard({ companyCode, data }: CompanyCardProps) {
                   </div>
                 </div>
                 
+                <div className="flex items-center gap-2 bg-gradient-to-r from-purple-50 to-transparent p-1.5 rounded-l-full hover:from-purple-100 transition-colors">
+                  <div className="bg-white/80 p-1 rounded-full shadow-sm">
+                    <AlertCircle className="h-4 w-4 text-purple-500" />
+                  </div>
+                  <div>
+                    <p className="text-xs font-medium text-purple-600/80">Bekleyen</p>
+                    <p className="text-lg font-bold text-purple-700">{data.totalPending.count}</p>
+                  </div>
+                </div>
+                
                 <div className="flex items-center gap-2 bg-gradient-to-r from-blue-50 to-transparent p-1.5 rounded-l-full hover:from-blue-100 transition-colors">
                   <div className="bg-white/80 p-1 rounded-full shadow-sm">
                     <EyeOff className="h-4 w-4 text-blue-500" />
@@ -209,9 +225,9 @@ function CompanyCard({ companyCode, data }: CompanyCardProps) {
               <div>
                 <h3 className="text-lg font-semibold text-blue-700">Tüm Raporlar</h3>
                 <p className="text-2xl font-bold">
-                  {data.totalSuccess.count + data.totalError.count + data.totalProcessing.count + data.totalIgnore.count}
+                  {data.totalSuccess.count + data.totalError.count + data.totalProcessing.count + data.totalIgnore.count + data.totalPending.count}
                   <span className="text-sm text-muted-foreground ml-1">
-                    ({formatSizeToMB(data.totalSuccess.size + data.totalError.size + data.totalProcessing.size + data.totalIgnore.size)}MB)
+                    ({formatSizeToMB(data.totalSuccess.size + data.totalError.size + data.totalProcessing.size + data.totalIgnore.size + data.totalPending.size)}MB)
                   </span>
                 </p>
               </div>
@@ -223,8 +239,8 @@ function CompanyCard({ companyCode, data }: CompanyCardProps) {
           
           {allReportNames.map((reportName) => {
             const metrics = reportMetrics[reportName];
-            const totalCount = metrics.success.count + metrics.error.count + metrics.processing.count + metrics.ignore.count;
-            const totalSize = metrics.success.size + metrics.error.size + metrics.processing.size + metrics.ignore.size;
+            const totalCount = metrics.success.count + metrics.error.count + metrics.processing.count + metrics.ignore.count + metrics.pending.count;
+            const totalSize = metrics.success.size + metrics.error.size + metrics.processing.size + metrics.ignore.size + metrics.pending.size;
             
             return (
               <Card 
@@ -259,6 +275,7 @@ function CompanyCard({ companyCode, data }: CompanyCardProps) {
                 <th className="text-center p-3 text-sm font-medium text-muted-foreground">Başarılı</th>
                 <th className="text-center p-3 text-sm font-medium text-muted-foreground">Başarısız</th>
                 <th className="text-center p-3 text-sm font-medium text-muted-foreground">İşleniyor</th>
+                <th className="text-center p-3 text-sm font-medium text-muted-foreground">Bekleyen</th>
                 <th className="text-center p-3 text-sm font-medium text-muted-foreground">Yoksayılan</th>
               </tr>
             </thead>
@@ -291,6 +308,10 @@ function CompanyCard({ companyCode, data }: CompanyCardProps) {
                       <span className="text-xs text-muted-foreground ml-1">({formatSizeToMB(item.processing.size)}MB)</span>
                     </td>
                     <td className="p-3 text-center">
+                      <span className="text-purple-600">{item.pending.count}</span>
+                      <span className="text-xs text-muted-foreground ml-1">({formatSizeToMB(item.pending.size)}MB)</span>
+                    </td>
+                    <td className="p-3 text-center">
                       <span className="text-blue-600">{item.ignore.count}</span>
                       <span className="text-xs text-muted-foreground ml-1">({formatSizeToMB(item.ignore.size)}MB)</span>
                     </td>
@@ -298,7 +319,7 @@ function CompanyCard({ companyCode, data }: CompanyCardProps) {
                 ))
               ) : (
                 <tr>
-                  <td colSpan={5} className="p-8 text-center text-muted-foreground">
+                  <td colSpan={6} className="p-8 text-center text-muted-foreground">
                     Bu rapor için şube verisi bulunamadı
                   </td>
                 </tr>

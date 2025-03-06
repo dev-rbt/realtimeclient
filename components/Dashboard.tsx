@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { generateRestaurants, generateSyncData, generateDatabaseConnections, generateAuditLogs } from '@/lib/mock-data';
-import { Restaurant, SyncData, DatabaseConnection, AuditLog, SystemMetrics } from '@/lib/types';
+import { Restaurant, SyncData, DatabaseConnection, AuditLog, SystemMetrics, SystemLog } from '@/lib/types';
 import { OverviewCards } from './dashboard/overview-cards';
 import { RestaurantsTable } from './tables/restaurants-table';
 import { DatabasesTab } from './dashboard/databases-tab';
@@ -15,7 +15,7 @@ import { CompanyCards } from "./dashboard/company-cards";
 import { SystemLogs } from './dashboard/system-logs';
 import { useMetricsStore } from '@/store/useMetricsStore';
 
-export default function Dashboard({metrics, error}: {metrics: SystemMetrics | null, error: string | null}) {
+export default function Dashboard({metrics, error, logs, logsError}: {metrics: SystemMetrics | null, error: string | null, logs: SystemLog[] | null, logsError: string | null}) {
   const [restaurants, setRestaurants] = useState<Restaurant[]>([]);
   const [recentSyncs, setRecentSyncs] = useState<SyncData[]>([]);
   const [databases, setDatabases] = useState<DatabaseConnection[]>([]);
@@ -132,7 +132,7 @@ export default function Dashboard({metrics, error}: {metrics: SystemMetrics | nu
 
       {/* System Logs - Right Side */}
       <div className="w-[350px] bg-card/50 backdrop-blur-sm shadow-lg overflow-hidden flex flex-col h-screen border-l">
-        <SystemLogs />
+        <SystemLogs logs={logs} logsError={logsError} />
       </div>
     </div>
   );

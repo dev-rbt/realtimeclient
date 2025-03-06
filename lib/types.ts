@@ -62,6 +62,7 @@ export interface ReportData {
   totalProcessing: TotalCount;
   totalError: TotalCount;
   totalIgnore: TotalCount;
+  totalPending: TotalCount;
 }
 
 export interface BranchData {
@@ -72,6 +73,7 @@ export interface BranchData {
   totalProcessing: TotalCount;
   totalError: TotalCount;
   totalIgnore: TotalCount;
+  totalPending: TotalCount;
 }
 
 export interface TenantData {
@@ -82,6 +84,7 @@ export interface TenantData {
   totalProcessing: TotalCount;
   totalError: TotalCount;
   totalIgnore: TotalCount;
+  totalPending: TotalCount;
   branches: BranchData[];
 }
 
@@ -113,4 +116,13 @@ export interface AuditLog {
   destination?: string;
   status: 'success' | 'error' | 'warning';
   details: Record<string, any>;
+}
+
+
+// UI için kullanacağımız log tipi
+export interface SystemLog {
+  id: string;
+  message: string;
+  timestamp: Date;
+  level: string;
 }

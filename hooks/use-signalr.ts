@@ -1,4 +1,4 @@
-import { SystemMetrics } from '@/lib/types';
+import { SystemLog, SystemMetrics } from '@/lib/types';
 import { HubConnection, HubConnectionBuilder, LogLevel, HttpTransportType } from '@microsoft/signalr';
 import { useEffect, useRef, useState } from 'react';
 
@@ -91,4 +91,29 @@ export const useSystemMetrics = () => {
     }, [connection]);
 
     return { metrics, error };
+};
+
+
+export const useLogs = () => {
+    const [logs, setLogs] = useState<SystemLog[] | null>(null);
+    const hubUrl = `${process.env.NEXT_PUBLIC_API_URL}/loghub`;
+    const { connection, error } = useSignalR(hubUrl);
+
+    useEffect(() => {
+        if (connection) {
+            console.log('Subscribing to ReceiveApplicationLogs');
+            connection.on('ReceiveApplicationLogs', (receivedLogs: any[]) => {
+                console.log('Received logs:', receivedLogs);
+                setLogs(receivedLogs);
+            });
+        }
+
+        return () => {
+            if (connection) {
+                connection.off('ReceiveApplicationLogs');
+            }
+        };
+    }, [connection]);
+
+    return { logs, error };
 };
