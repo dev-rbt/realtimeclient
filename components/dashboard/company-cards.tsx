@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Search, Building2, CheckCircle2, XCircle, Clock, Database, ChevronLeft, ChevronRight, EyeOff, AlertCircle } from 'lucide-react';
+import { Search, Building2, CheckCircle2, XCircle, Clock, Database, ChevronLeft, ChevronRight, EyeOff, AlertCircle, RefreshCw } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { DocumentMetricsResponse } from '@/lib/types';
@@ -383,7 +383,7 @@ function CompanyCard({ companyCode, data }: CompanyCardProps) {
 
 export function CompanyCards() {
   const [searchQuery, setSearchQuery] = useState("");
-  const { metrics } = useMetricsStore();
+  const { metrics, fetchMetrics } = useMetricsStore();
 
   const companies = Object.entries(metrics?.tenants ?? {}).map(([code, data]) => ({
     companyCode: code,
@@ -396,17 +396,28 @@ export function CompanyCards() {
 
   return (
     <div className="space-y-6">
-      <div className="relative">
-        <div className="absolute inset-y-0 left-3 flex items-center pointer-events-none">
-          <Search className="h-5 w-5 text-muted-foreground" />
+      <div className="flex items-center justify-between mb-4">
+        <div className="relative flex-1">
+          <div className="absolute inset-y-0 left-3 flex items-center pointer-events-none">
+            <Search className="h-5 w-5 text-muted-foreground" />
+          </div>
+          <input
+            type="text"
+            placeholder="Firma koduna göre ara..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="w-full pl-10 pr-4 py-2 rounded-xl border bg-card/50 backdrop-blur-sm focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
+          />
         </div>
-        <input
-          type="text"
-          placeholder="Firma koduna göre ara..."
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-          className="w-full pl-10 pr-4 py-2 rounded-xl border bg-card/50 backdrop-blur-sm focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
-        />
+        <Button 
+          variant="outline" 
+          size="icon" 
+          className="ml-2 rounded-xl"
+          onClick={() => fetchMetrics()}
+          title="Yenile"
+        >
+          <RefreshCw className="h-5 w-5" />
+        </Button>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
