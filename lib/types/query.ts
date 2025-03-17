@@ -1,28 +1,28 @@
+export interface QueryAttribute {
+  tableName: string;
+  query: string;
+  id?: string;
+}
+
+export interface QueryGroup {
+  id: string;
+  name: string;
+  type: string;
+  primaryKey: string;
+  includeBranchId: boolean;
+  queries: QueryAttribute[];
+  createdAt: string;
+  lastUpdatedAt: string;
+}
+
 export interface QueryTemplate {
   id: string;
   templateName: string;
   queries: QueryGroup[];
   tenantId: string;
-  isActive: boolean;
+  isDefault: boolean;
   createdAt: string;
   lastUpdatedAt: string;
-}
-
-export interface QueryGroup {
-  id: string;
-  queries: SubQuery[];
-  type: string;
-  name: string;
-  primaryKey: string;
-  includeBranchId: boolean;
-  createdAt: string;
-  lastUpdatedAt: string;
-}
-
-export interface SubQuery {
-  id: string;
-  tableName: string;
-  query: string;
 }
 
 export interface QueryTargetSettings {
@@ -50,8 +50,32 @@ export interface UpdateQueryRequest {
   tenantId: string; // Firma kısa kodu
 }
 
+export interface CreateTemplateRequest {
+  templateName: string;
+  tenants: string[];
+  isDefault: boolean;
+}
+
 export interface UpdateTemplateRequest {
   templateName: string;
-  tenantId: string;
-  isActive: boolean;
+  tenants: string[];
+  isDefault: boolean;
+}
+
+export interface CreateQueryGroupRequest {
+  templateId: string;
+  name: string;
+  type: string;
+  primaryKey: string;
+  includeBranchId: boolean;
+  queries: QueryAttribute[];
+}
+
+export interface UpdateQueryGroupRequest {
+  templateId: string;
+  name: string;
+  type: string;
+  primaryKey: string;
+  includeBranchId: boolean;
+  queries: QueryAttribute[];
 }

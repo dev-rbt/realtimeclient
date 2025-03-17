@@ -10,7 +10,6 @@ export const useSignalR = (hubUrl: string) => {
     useEffect(() => {
         const createConnection = async () => {
             try {
-                console.log('Attempting to connect to:', hubUrl);
 
                 const newConnection = new HubConnectionBuilder()
                     .withUrl(hubUrl, {
@@ -36,12 +35,9 @@ export const useSignalR = (hubUrl: string) => {
                 });
 
                 newConnection.onreconnected((connectionId) => {
-                    console.log('Reconnected with ID:', connectionId);
                 });
 
-                console.log('Starting connection...');
                 await newConnection.start();
-                console.log("SignalR Connected successfully!");
                 setConnection(newConnection);
                 setError(null);
             } catch (err) {
@@ -76,9 +72,7 @@ export const useSystemMetrics = () => {
 
     useEffect(() => {
         if (connection) {
-            console.log('Subscribing to ReceiveMetrics');
             connection.on('ReceiveMetrics', (data: SystemMetrics) => {
-                console.log('Received metrics:', data);
                 setMetrics(data);
             });
         }
@@ -101,9 +95,7 @@ export const useLogs = () => {
 
     useEffect(() => {
         if (connection) {
-            console.log('Subscribing to ReceiveApplicationLogs');
             connection.on('ReceiveApplicationLogs', (receivedLogs: any[]) => {
-                console.log('Received logs:', receivedLogs);
                 setLogs(receivedLogs);
             });
         }

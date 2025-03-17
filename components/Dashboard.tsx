@@ -13,14 +13,12 @@ import { SettingsTab } from './dashboard/settings-tab';
 import { QueriesTab } from './dashboard/queries-tab';
 import { CompanyCards } from "./dashboard/company-cards";
 import { SystemLogs } from './dashboard/system-logs';
-import { useMetricsStore } from '@/store/useMetricsStore';
 
 export default function Dashboard({metrics, error, logs, logsError}: {metrics: SystemMetrics | null, error: string | null, logs: SystemLog[] | null, logsError: string | null}) {
   const [restaurants, setRestaurants] = useState<Restaurant[]>([]);
   const [recentSyncs, setRecentSyncs] = useState<SyncData[]>([]);
   const [databases, setDatabases] = useState<DatabaseConnection[]>([]);
   const [auditLogs, setAuditLogs] = useState<AuditLog[]>([]);
-  const { lastUpdated } = useMetricsStore();
 
   // SignalR bağlantı durumunu kontrol edelim
   useEffect(() => {
@@ -31,7 +29,6 @@ export default function Dashboard({metrics, error, logs, logsError}: {metrics: S
 
   // Metrics değişimini izleyelim
   useEffect(() => {
-    console.log('Dashboard metrics updated:', metrics);
   }, [metrics]);
 
   useEffect(() => {
@@ -75,9 +72,7 @@ export default function Dashboard({metrics, error, logs, logsError}: {metrics: S
                 </h1>
                 <p className="text-muted-foreground mt-2">Gerçek zamanlı sistem monitörü</p>
               </div>
-              <div className="text-sm text-muted-foreground bg-background/50 px-4 py-2 rounded-full">
-                Son Güncelleme: {lastUpdated}
-              </div>
+              
             </div>
           </div>
 
@@ -107,7 +102,7 @@ export default function Dashboard({metrics, error, logs, logsError}: {metrics: S
                   </div>
                 </TabsContent>
                 <TabsContent value="branches" className="h-full overflow-auto m-0">
-                  <RestaurantsTable />
+                  {/* <RestaurantsTable /> */}
                 </TabsContent>
                 {/* <TabsContent value="databases" className="h-full overflow-auto m-0">
                   <DatabasesTab databases={databases} />

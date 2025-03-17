@@ -42,7 +42,6 @@ export function SystemLogs({ logs, logsError }: { logs: SystemLog[] | null, logs
 
   // Log temizleme işlevi (daha sonra bu özellik eklenmek istenirse)
   const clearLogs = () => {
-    console.log('Loglar temizlenmek istendi');
   };
 
   return (

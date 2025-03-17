@@ -6,7 +6,6 @@ import { ColumnDef, useReactTable, getCoreRowModel, getFilteredRowModel, getPagi
 import { ArrowUpDown } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { useMetricsStore } from '@/store/useMetricsStore';
 import { useMemo, useState } from 'react';
 
 // Helper function to convert bytes to MB
@@ -171,99 +170,98 @@ const columns: ColumnDef<ExtendedBranchData>[] = [
 type BranchFilter = 'all' | 'active' | 'passive';
 
 export function RestaurantsTable() {
-  const { metrics } = useMetricsStore();
   const [activeFilter, setActiveFilter] = useState<BranchFilter>('all');
   const [searchValue, setSearchValue] = useState('');
   
   // Flatten all branches from all tenants into a single array
-  const branches = useMemo(() => {
-    if (!metrics) return [];
+  // const branches = useMemo(() => {
+  //   if (!metrics) return [];
     
-    const allBranches: ExtendedBranchData[] = [];
+  //   const allBranches: ExtendedBranchData[] = [];
     
-    Object.entries(metrics.tenants).forEach(([tenantId, tenant]) => {
-      tenant.branches.forEach(branch => {
-        allBranches.push({
-          ...branch,
-          tenantId
-        });
-      });
-    });
+  //   Object.entries(metrics.tenants).forEach(([tenantId, tenant]) => {
+  //     tenant.branches.forEach(branch => {
+  //       allBranches.push({
+  //         ...branch,
+  //         tenantId
+  //       });
+  //     });
+  //   });
     
-    return allBranches;
-  }, [metrics]);
+  //   return allBranches;
+  // }, [metrics]);
 
   // Apply filter based on active/passive status
-  const filteredBranches = useMemo(() => {
-    if (activeFilter === 'all') return branches;
-    return branches.filter(branch => 
-      activeFilter === 'active' ? branch.isActive : !branch.isActive
-    );
-  }, [branches, activeFilter]);
+  // const filteredBranches = useMemo(() => {
+  //   if (activeFilter === 'all') return branches;
+  //   return branches.filter(branch => 
+  //     activeFilter === 'active' ? branch.isActive : !branch.isActive
+  //   );
+  // }, [branches, activeFilter]);
 
-  // Apply search filter
-  const searchFilteredBranches = useMemo(() => {
-    if (!searchValue) return filteredBranches;
-    return filteredBranches.filter(branch => 
-      String(branch.branchId).includes(searchValue) || 
-      branch.tenantId.toLowerCase().includes(searchValue.toLowerCase())
-    );
-  }, [filteredBranches, searchValue]);
+  // // Apply search filter
+  // const searchFilteredBranches = useMemo(() => {
+  //   if (!searchValue) return filteredBranches;
+  //   return filteredBranches.filter(branch => 
+  //     String(branch.branchId).includes(searchValue) || 
+  //     branch.tenantId.toLowerCase().includes(searchValue.toLowerCase())
+  //   );
+  // }, [filteredBranches, searchValue]);
 
-  const table = useReactTable({
-    columns,
-    data: searchFilteredBranches,
-    getCoreRowModel: getCoreRowModel(),
-    getFilteredRowModel: getFilteredRowModel(),
-    getPaginationRowModel: getPaginationRowModel(),
-    getSortedRowModel: getSortedRowModel(),
-  });
+//   const table = useReactTable({
+//     columns,
+//     data: searchFilteredBranches,
+//     getCoreRowModel: getCoreRowModel(),
+//     getFilteredRowModel: getFilteredRowModel(),
+//     getPaginationRowModel: getPaginationRowModel(),
+//     getSortedRowModel: getSortedRowModel(),
+//   });
 
-  return (
-    <div className="space-y-4">
-      <div className="flex flex-col sm:flex-row gap-2 sm:items-center justify-between">
-        <div className="flex gap-2 border rounded-md p-1 bg-muted/20">
-          <Button 
-            variant="ghost"
-            onClick={() => setActiveFilter('all')}
-            size="sm"
-            className={`${activeFilter === 'all' ? 'bg-primary text-primary-foreground' : 'hover:bg-muted'}`}
-          >
-            Tümü
-          </Button>
-          <Button 
-            variant="ghost"
-            onClick={() => setActiveFilter('active')}
-            size="sm"
-            className={`${activeFilter === 'active' ? 'bg-green-500 text-white' : 'hover:bg-muted'}`}
-          >
-            Sadece Aktif Şubeler
-          </Button>
-          <Button 
-            variant="ghost"
-            onClick={() => setActiveFilter('passive')}
-            size="sm"
-            className={`${activeFilter === 'passive' ? 'bg-red-500 text-white' : 'hover:bg-muted'}`}
-          >
-            Sadece Pasif Şubeler
-          </Button>
-        </div>
+//   return (
+//     <div className="space-y-4">
+//       <div className="flex flex-col sm:flex-row gap-2 sm:items-center justify-between">
+//         <div className="flex gap-2 border rounded-md p-1 bg-muted/20">
+//           <Button 
+//             variant="ghost"
+//             onClick={() => setActiveFilter('all')}
+//             size="sm"
+//             className={`${activeFilter === 'all' ? 'bg-primary text-primary-foreground' : 'hover:bg-muted'}`}
+//           >
+//             Tümü
+//           </Button>
+//           <Button 
+//             variant="ghost"
+//             onClick={() => setActiveFilter('active')}
+//             size="sm"
+//             className={`${activeFilter === 'active' ? 'bg-green-500 text-white' : 'hover:bg-muted'}`}
+//           >
+//             Sadece Aktif Şubeler
+//           </Button>
+//           <Button 
+//             variant="ghost"
+//             onClick={() => setActiveFilter('passive')}
+//             size="sm"
+//             className={`${activeFilter === 'passive' ? 'bg-red-500 text-white' : 'hover:bg-muted'}`}
+//           >
+//             Sadece Pasif Şubeler
+//           </Button>
+//         </div>
         
-        <div className="relative w-full sm:w-auto max-w-sm">
-          <Input
-            placeholder="Şube ID veya Tenant ara..."
-            value={searchValue}
-            onChange={(e) => setSearchValue(e.target.value)}
-            className="glass"
-          />
-        </div>
-      </div>
+//         <div className="relative w-full sm:w-auto max-w-sm">
+//           <Input
+//             placeholder="Şube ID veya Tenant ara..."
+//             value={searchValue}
+//             onChange={(e) => setSearchValue(e.target.value)}
+//             className="glass"
+//           />
+//         </div>
+//       </div>
       
-      <DataTable
-        columns={columns}
-        data={searchFilteredBranches}
-        table={table}
-      />
-    </div>
-  );
-}
+//       <DataTable
+//         columns={columns}
+//         data={searchFilteredBranches}
+//         table={table}
+//       />
+//     </div>
+//   );
+ }

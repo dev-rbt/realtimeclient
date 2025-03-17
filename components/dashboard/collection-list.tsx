@@ -5,9 +5,9 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Search, Edit } from 'lucide-react';
+import { Search, Edit, Trash2, Star } from 'lucide-react';
 import { TemplateModal } from "./template-modal";
-import cn from 'classnames';
+import { cn } from "@/lib/utils";
 
 interface CollectionListProps {
   templates: QueryTemplate[];
@@ -19,6 +19,8 @@ interface CollectionListProps {
   onTemplateSelect: (template: QueryTemplate) => void;
   onTemplateEdit: (template: QueryTemplate) => void;
   onRefresh: () => void;
+  onDeleteTemplate: (template: QueryTemplate, event?: React.MouseEvent) => void;
+  onSetDefaultTemplate: (template: QueryTemplate, event?: React.MouseEvent) => void;
 }
 
 export function CollectionList({
@@ -30,7 +32,9 @@ export function CollectionList({
   onSearchChange,
   onTemplateSelect,
   onTemplateEdit,
-  onRefresh
+  onRefresh,
+  onDeleteTemplate,
+  onSetDefaultTemplate
 }: CollectionListProps) {
   const filteredTemplates = templates.filter((template) => {
     const searchLower = searchQuery.toLowerCase();
@@ -89,16 +93,19 @@ export function CollectionList({
                 >
                   <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                     <div className="flex flex-col items-start gap-1">
-                      <span className="font-medium text-sm">{template.templateName || ''}</span>
+                      <div className="flex items-center gap-1">
+                        <span className="font-medium text-sm">{template.templateName || ''}</span>
+                        {template.isDefault && (
+                          <Star className="h-3 w-3 text-yellow-500 fill-yellow-500" />
+                        )}
+                      </div>
                       <span className="text-xs text-muted-foreground/80">
-                        {template.tenantId || 'Firma kısa kodu belirtilmemiş'}
+                        {template.isDefault 
+                          ? 'Tüm firmalar (Varsayılan)' 
+                          : template.tenantId 
+                            ? `${template.tenantId.split(',').length} firma seçili` 
+                            : 'Firma seçilmemiş'}
                       </span>
-                    </div>
-                    <div className={`px-2 py-1 rounded-full text-[10px] font-medium tracking-wide uppercase transition-colors ${template.isActive
-                        ? 'bg-green-500/10 text-green-500'
-                        : 'bg-yellow-500/10 text-yellow-500'
-                      }`}>
-                      {template.isActive ? 'Aktif' : 'Pasif'}
                     </div>
                   </CardHeader>
                   <CardContent className="pb-3">
@@ -106,6 +113,29 @@ export function CollectionList({
                       <span className="text-xs text-muted-foreground">
                         {template.queries.length} sorgu
                       </span>
+                      <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                        {!template.isDefault && (
+                          <Button 
+                            variant="ghost" 
+                            size="icon" 
+                            className="h-7 w-7" 
+                            onClick={(e) => onSetDefaultTemplate(template, e)}
+                            title="Varsayılan Yap"
+                          >
+                            <Star className="h-3.5 w-3.5" />
+                          </Button>
+                        )}
+                        <Button 
+                          variant="ghost" 
+                          size="icon" 
+                          className="h-7 w-7 text-destructive hover:text-destructive" 
+                          onClick={(e) => onDeleteTemplate(template, e)}
+                          title="Sil"
+                          disabled={template.isDefault}
+                        >
+                          <Trash2 className="h-3.5 w-3.5" />
+                        </Button>
+                      </div>
                     </div>
                   </CardContent>
                 </Card>
