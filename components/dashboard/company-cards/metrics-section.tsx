@@ -11,7 +11,7 @@ function MetricsSection({ title, metrics }: MetricsSectionProps) {
     return (
         <div className="mt-2">
             <h4 className="text-sm font-semibold text-blue-700 mb-1">{title}</h4>
-            <div className="grid grid-cols-2 gap-1.5 text-sm">
+            <div className="grid grid-cols-2 xs:grid-cols-3 sm:grid-cols-2 md:grid-cols-3 gap-1.5 text-sm">
                 <MetricItem
                     icon={<Clock className="h-3.5 w-3.5 text-orange-500" />}
                     label="İşlenen"

@@ -26,8 +26,8 @@ export function CompanyCards() {
         refreshMetrics={fetchAllMetrics}
       />
 
-      <div className="flex items-center justify-between">
-        <div className="relative flex-1">
+      <div className="flex flex-col sm:flex-row items-center gap-2 sm:gap-0 sm:justify-between">
+        <div className="relative w-full sm:flex-1">
           <div className="absolute inset-y-0 left-3 flex items-center pointer-events-none">
             <Search className="h-4 w-4 text-muted-foreground" />
           </div>
@@ -42,12 +42,14 @@ export function CompanyCards() {
         <Button
           variant="outline"
           size="sm"
-          className="ml-2 rounded-lg"
+          className="w-full sm:w-auto sm:ml-2 rounded-lg"
           onClick={fetchAllMetrics}
           title="Yenile"
           disabled={loading}
         >
-          <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
+          <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''} mr-1`} />
+          <span className="sm:hidden">Tüm Metrikleri Yenile</span>
+          <span className="hidden sm:inline">Yenile</span>
         </Button>
       </div>
 

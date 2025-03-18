@@ -126,9 +126,9 @@ export default function Dashboard({metrics, error, logs, logsError}: {metrics: S
       </div>
 
       {/* System Logs - Right Side */}
-      <div className="w-[350px] bg-card/50 backdrop-blur-sm shadow-lg overflow-hidden flex flex-col h-screen border-l">
+      {/* <div className="w-[350px] bg-card/50 backdrop-blur-sm shadow-lg overflow-hidden flex flex-col h-screen border-l">
         <SystemLogs logs={logs} logsError={logsError} />
-      </div>
+      </div> */}
     </div>
   );
 }

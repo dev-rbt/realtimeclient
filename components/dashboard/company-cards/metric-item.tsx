@@ -12,16 +12,16 @@ interface MetricItemProps {
 
 function MetricItem({ icon, label, value, loading, bgColor, textColor }: MetricItemProps) {
     return (
-        <div className={`flex items-center gap-2 ${bgColor} p-1.5 rounded-l-full hover:brightness-95 transition-colors`}>
-            <div className="bg-white/80 p-1 rounded-full shadow-sm">
+        <div className={`flex items-center gap-1.5 sm:gap-2 ${bgColor} p-1.5 rounded-l-full hover:brightness-95 transition-colors`}>
+            <div className="bg-white/80 p-1 rounded-full shadow-sm flex-shrink-0">
                 {icon}
             </div>
-            <div>
-                <p className={`text-xs font-medium ${textColor}/80`}>{label}</p>
+            <div className="min-w-0 flex-1">
+                <p className={`text-xs font-medium ${textColor}/80 truncate`}>{label}</p>
                 {loading ? (
                     <RefreshCw className={`h-4 w-4 ${textColor} animate-spin`} />
                 ) : (
-                    <p className={`text-lg font-bold ${textColor}`}>{formatNumber(value)}</p>
+                    <p className={`text-base sm:text-lg font-bold ${textColor} truncate`}>{formatNumber(value)}</p>
                 )}
             </div>
         </div>
