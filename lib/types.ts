@@ -76,36 +76,10 @@ export interface BranchData {
   totalPending: TotalCount;
 }
 
-export interface TenantData {
-  activeBranches: number;
-  passiveBranches: number;
-  databaseConnection: boolean;
-  totalSuccess: TotalCount;
-  totalProcessing: TotalCount;
-  totalError: TotalCount;
-  totalIgnore: TotalCount;
-  totalPending: TotalCount;
-  branches: BranchData[];
-}
 
-export interface DocumentMetricsResponse {
-  tenants: {
-    [key: string]: TenantData;
-  };
-}
 
-export interface CompanyMetrics {
-  companyCode: string;
-  branches: {
-    active: number;
-    passive: number;
-  };
-  transactions: {
-    successful: number;
-    failed: number;
-    processing: number;
-  };
-}
+
+
 
 export interface AuditLog {
   id: string;
@@ -125,4 +99,35 @@ export interface SystemLog {
   message: string;
   timestamp: Date;
   level: string;
+}
+
+
+export interface MetricData {
+  count: number;
+  size: number;
+}
+
+export interface MetricStatus {
+  data: MetricData | null;
+  loading: boolean;
+}
+export interface CategoryMetrics {
+  processing: MetricStatus;
+  completed: MetricStatus;
+  ignore: MetricStatus;
+  error: MetricStatus;
+  created: MetricStatus;
+  total: MetricData;
+}
+
+
+export interface TenantMetrics {
+  sale: CategoryMetrics;
+  other: CategoryMetrics;
+}
+
+export interface TenantInfo {
+  tenantId: string;
+  activeBranches: number;
+  passiveBranches: number;
 }
