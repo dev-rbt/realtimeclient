@@ -28,14 +28,17 @@ import {
   DialogContent, 
   DialogHeader, 
   DialogTitle,
-  DialogDescription
+  DialogDescription,
+  DialogClose
 } from '@/components/ui/dialog';
 import { format } from 'date-fns';
 import { tr } from 'date-fns/locale';
 import { 
   AlertCircle, 
+  ArrowDown,
   ArrowLeft, 
   ArrowRight, 
+  ArrowUp, 
   Check, 
   ChevronLeft, 
   ChevronRight, 
@@ -43,7 +46,8 @@ import {
   ChevronsRight, 
   Copy, 
   Loader2, 
-  Search 
+  Search,
+  X
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useToast } from '@/components/ui/use-toast';
@@ -107,7 +111,7 @@ const JsonViewer = ({ data }: { data: any }) => {
   };
   
   return (
-    <div className="relative">
+    <div className="relative w-full h-full">
       <div className="flex justify-end mb-2">
         <Button 
           id="json-copy-button"
@@ -120,11 +124,35 @@ const JsonViewer = ({ data }: { data: any }) => {
           <span>Kopyala</span>
         </Button>
       </div>
-      <pre className="bg-slate-50 p-4 rounded-md overflow-auto max-h-[60vh] text-sm w-full">
-        {JSON.stringify(data, null, 2)}
-      </pre>
+      <div className="relative w-full h-full">
+        <pre className="bg-slate-50 p-4 rounded-md overflow-auto max-h-[calc(70vh-200px)] text-sm w-full">
+          {JSON.stringify(data, null, 2)}
+        </pre>
+      </div>
     </div>
   );
+};
+
+// Safe date formatting function
+const formatDate = (date: any): string => {
+  try {
+    if (!date) return '-';
+    return format(new Date(date), "dd MMM yyyy HH:mm:ss.SSS", { locale: tr });
+  } catch (error) {
+    console.error('Error formatting date:', error);
+    return '-';
+  }
+};
+
+// Simpler date format for table display
+const formatDateSimple = (date: any): string => {
+  try {
+    if (!date) return '-';
+    return format(new Date(date), "dd MMM yyyy HH:mm", { locale: tr });
+  } catch (error) {
+    console.error('Error formatting date:', error);
+    return '-';
+  }
 };
 
 // Calculate remaining time until expiration
@@ -154,124 +182,71 @@ const getRemainingTime = (expiresAt: Date): string => {
 };
 
 // Workflow Visualization component
-const WorkflowVisualization = ({ workflow, formatDate }: { workflow?: WorkFlow[], formatDate: (date: any) => string }) => {
-  if (!workflow || workflow.length === 0) {
-    return <div className="text-center py-4 text-muted-foreground">İş akışı bilgisi bulunamadı</div>;
-  }
-  
-  // Get status description based on enum
-  const getStatusDescription = (status: DocumentStatus): string => {
-    switch(status) {
-      case DocumentStatus.Created:
-        return 'Döküman Kaydedildi';
-      case DocumentStatus.Processing:
-        return 'İşleme Alındı';
-      case DocumentStatus.Completed:
-        return 'İşlendi';
-      case DocumentStatus.Error:
-        return 'Hatalı';
-      case DocumentStatus.Ignore:
-        return 'Yeni Versiyon Eklendi';
-      default:
-        return status;
-    }
+const WorkflowVisualization = ({ workflow = [] }: { workflow?: WorkFlow[] }) => {
+  // Status descriptions
+  const statusDescriptions: Record<string, string> = {
+    'Created': 'Döküman Kaydedildi',
+    'Processing': 'İşleme Alındı',
+    'Completed': 'İşlendi',
+    'Error': 'Hatalı',
+    'Ignore': 'Yeni Versiyon Eklendi'
   };
-  
-  // Get color based on status
-  const getStatusColor = (status: DocumentStatus): string => {
-    switch(status) {
-      case DocumentStatus.Created:
-        return 'bg-yellow-100 border-yellow-300 text-yellow-800';
-      case DocumentStatus.Processing:
-        return 'bg-blue-100 border-blue-300 text-blue-800';
-      case DocumentStatus.Completed:
-        return 'bg-green-100 border-green-300 text-green-800';
-      case DocumentStatus.Error:
-        return 'bg-red-100 border-red-300 text-red-800';
-      case DocumentStatus.Ignore:
-        return 'bg-gray-100 border-gray-300 text-gray-800';
-      default:
-        return 'bg-slate-100 border-slate-300 text-slate-800';
-    }
+
+  // Status colors
+  const statusColors: Record<string, string> = {
+    'Created': 'bg-yellow-100 border-yellow-300 text-yellow-800',
+    'Processing': 'bg-blue-100 border-blue-300 text-blue-800',
+    'Completed': 'bg-green-100 border-green-300 text-green-800',
+    'Error': 'bg-red-100 border-red-300 text-red-800',
+    'Ignore': 'bg-gray-100 border-gray-300 text-gray-800'
   };
-  
-  // Group workflow items into rows (max 5 items per row)
+
+  // Group workflow items into rows of 5
   const rows: WorkFlow[][] = [];
-  let currentRow: WorkFlow[] = [];
-  
-  workflow.forEach((item, index) => {
-    currentRow.push(item);
-    
-    if (currentRow.length === 5 || index === workflow.length - 1) {
-      rows.push([...currentRow]);
-      currentRow = [];
-    }
-  });
-  
+  for (let i = 0; i < workflow.length; i += 5) {
+    rows.push(workflow.slice(i, i + 5));
+  }
+
   return (
-    <div className="space-y-6 py-4">
+    <div className="p-4 space-y-8">
       {rows.map((row, rowIndex) => (
-        <div 
-          key={rowIndex} 
-          className={cn(
-            "flex items-center gap-2", 
-            rowIndex % 2 === 1 ? "flex-row-reverse" : "flex-row"
-          )}
-        >
+        <div key={rowIndex} className={`flex ${rowIndex % 2 === 0 ? '' : 'flex-row-reverse'} justify-between items-center`}>
           {row.map((item, itemIndex) => {
-            const isLast = itemIndex === row.length - 1;
-            const isEvenRow = rowIndex % 2 === 0;
-            const showArrow = !isLast || (rows.length > rowIndex + 1 && row.length === 5);
-            
-            // Use the appropriate field names based on what's available
-            const status = item.status || item.documentStatus || DocumentStatus.Created;
+            const status = item.status || item.documentStatus || 'Unknown';
             const timestamp = item.timestamp || item.createdAt;
-            const message = item.message || item.description;
+            const message = item.message || item.description || '';
             
             return (
-              <React.Fragment key={itemIndex}>
-                <div className={cn(
-                  "relative flex-shrink-0 p-3 rounded-md border-2 min-w-[150px]",
-                  getStatusColor(status)
-                )}>
-                  <div className="font-medium">{getStatusDescription(status)}</div>
+              <div key={itemIndex} className="flex flex-col items-center">
+                <div className={`p-3 rounded-md border ${statusColors[status] || 'bg-gray-100 border-gray-300'} min-w-[180px]`}>
+                  <div className="font-medium">{statusDescriptions[status] || status}</div>
                   <div className="text-xs mt-1">{formatDate(timestamp)}</div>
                   {message && <div className="text-xs mt-1 italic">{message}</div>}
                 </div>
                 
-                {showArrow && (
-                  <div className="flex-shrink-0">
-                    {isEvenRow ? (
-                      <ArrowRight className="h-5 w-5 text-muted-foreground" />
+                {/* Arrows between items */}
+                {itemIndex < row.length - 1 && (
+                  <div className="flex-1 px-2">
+                    {rowIndex % 2 === 0 ? (
+                      <ArrowRight className="text-gray-400" />
                     ) : (
-                      <ArrowLeft className="h-5 w-5 text-muted-foreground" />
+                      <ArrowLeft className="text-gray-400" />
                     )}
                   </div>
                 )}
-                
-                {/* Show down arrow at the end of a full row that's not the last row */}
-                {isEvenRow && isLast && row.length === 5 && rows.length > rowIndex + 1 && (
-                  <div className="absolute -bottom-6 right-[75px]">
-                    <div className="h-6 w-px bg-muted-foreground"></div>
-                    <div className="-mt-1 ml-[-4px]">
-                      <ArrowRight className="h-5 w-5 text-muted-foreground rotate-90" />
-                    </div>
-                  </div>
-                )}
-                
-                {/* Show down arrow at the beginning of a reversed row that's not the last row */}
-                {!isEvenRow && isLast && row.length === 5 && rows.length > rowIndex + 1 && (
-                  <div className="absolute -bottom-6 left-[75px]">
-                    <div className="h-6 w-px bg-muted-foreground"></div>
-                    <div className="-mt-1 ml-[-4px]">
-                      <ArrowRight className="h-5 w-5 text-muted-foreground rotate-90" />
-                    </div>
-                  </div>
-                )}
-              </React.Fragment>
+              </div>
             );
           })}
         </div>
+      ))}
+      
+      {/* Vertical arrows between rows */}
+      {rows.length > 1 && rows.map((_, rowIndex) => (
+        rowIndex < rows.length - 1 && (
+          <div key={`arrow-${rowIndex}`} className="flex justify-center">
+            <ArrowDown className="text-gray-400" />
+          </div>
+        )
       ))}
     </div>
   );
@@ -422,34 +397,6 @@ export function AnalyseTab() {
   const { toast } = useToast();
   const { connections, isLoading: isLoadingConnections, error: connectionsError, fetchConnections } = useConnectionsStore();
   
-  // Format date safely - moved to component level to be used in multiple places
-  const formatDate = (dateValue: any): string => {
-    try {
-      // Check if the date is valid
-      const date = new Date(dateValue);
-      if (isNaN(date.getTime())) {
-        return 'Geçersiz tarih';
-      }
-      return format(date, "dd MMM yyyy HH:mm:ss.SSS", { locale: tr });
-    } catch (error) {
-      return 'Geçersiz tarih';
-    }
-  };
-
-  // Format date without milliseconds (for table display)
-  const formatDateSimple = (dateValue: any): string => {
-    try {
-      // Check if the date is valid
-      const date = new Date(dateValue);
-      if (isNaN(date.getTime())) {
-        return 'Geçersiz tarih';
-      }
-      return format(date, "dd MMM yyyy HH:mm", { locale: tr });
-    } catch (error) {
-      return 'Geçersiz tarih';
-    }
-  };
-
   // State for filter options
   const [dataTypeOptions, setDataTypeOptions] = useState<DataTypeOption[]>([]);
   const [statusOptions, setStatusOptions] = useState<StatusOption[]>([]);
@@ -484,6 +431,10 @@ export function AnalyseTab() {
   // State for search
   const [searchTerm, setSearchTerm] = useState<string>('');
   const [filteredDocuments, setFilteredDocuments] = useState<Document[]>([]);
+  
+  // State for sorting
+  const [sortField, setSortField] = useState<string | null>(null);
+  const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
   
   // State for JSON viewer modal
   const [selectedDocument, setSelectedDocument] = useState<Document | null>(null);
@@ -569,11 +520,16 @@ export function AnalyseTab() {
     
     // Filter documents based on search term
     const filtered = searchTerm 
-      ? allDocuments.filter(doc => 
-          doc.referenceCode.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          doc.lastDocumentStatus.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          doc.branchId.toString().includes(searchTerm) ||
-          (doc.data.type && doc.data.type.toString().toLowerCase().includes(searchTerm.toLowerCase())))
+      ? allDocuments.filter(doc => {
+          const searchLower = searchTerm.toLowerCase();
+          return (
+            (doc.referenceCode?.toLowerCase() || '').includes(searchLower) ||
+            (doc.lastDocumentStatus?.toLowerCase() || '').includes(searchLower) ||
+            (doc.branchId?.toString() || '').toLowerCase().includes(searchLower) ||
+            (selectedDataTypeObject?.primaryKey && 
+              (getPrimaryKeyValue(doc, selectedDataTypeObject.primaryKey).toString().toLowerCase() || '').includes(searchLower))
+          );
+        })
       : allDocuments;
     
     setFilteredDocuments(filtered);
@@ -678,9 +634,97 @@ export function AnalyseTab() {
   
   // Function to handle search input change
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setSearchTerm(e.target.value);
+    const value = e.target.value;
+    setSearchTerm(value);
+    
+    // Filter documents based on search term
+    const filtered = allDocuments.filter(doc => {
+      const searchLower = value.toLowerCase();
+      return (
+        (doc.referenceCode?.toLowerCase() || '').includes(searchLower) ||
+        (doc.lastDocumentStatus?.toLowerCase() || '').includes(searchLower) ||
+        (doc.branchId?.toString() || '').toLowerCase().includes(searchLower) ||
+        (selectedDataTypeObject?.primaryKey && 
+          (getPrimaryKeyValue(doc, selectedDataTypeObject.primaryKey).toString().toLowerCase() || '').includes(searchLower))
+      );
+    });
+    
+    setFilteredDocuments(filtered);
     setCurrentPage(1); // Reset to first page when search changes
   };
+  
+  // Function to handle sorting
+  const handleSort = (field: string) => {
+    // If clicking the same field, toggle direction
+    if (sortField === field) {
+      setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
+    } else {
+      // If clicking a new field, set it as sort field with default asc direction
+      setSortField(field);
+      setSortDirection('asc');
+    }
+  };
+  
+  // Apply sorting to filtered documents
+  useEffect(() => {
+    if (!sortField) {
+      return;
+    }
+    
+    const sortedDocs = [...filteredDocuments].sort((a, b) => {
+      let valueA, valueB;
+      
+      // Get the appropriate values based on the sort field
+      switch (sortField) {
+        case 'branchId':
+          valueA = a.branchId || '';
+          valueB = b.branchId || '';
+          break;
+        case 'status':
+          valueA = a.lastDocumentStatus || '';
+          valueB = b.lastDocumentStatus || '';
+          break;
+        case 'referenceCode':
+          valueA = a.referenceCode || '';
+          valueB = b.referenceCode || '';
+          break;
+        case 'createdAt':
+          valueA = new Date(a.createdAt || 0).getTime();
+          valueB = new Date(b.createdAt || 0).getTime();
+          break;
+        case 'expiresAt':
+          valueA = new Date(a.expiresAt || 0).getTime();
+          valueB = new Date(b.expiresAt || 0).getTime();
+          break;
+        case 'primaryKey':
+          if (selectedDataTypeObject?.primaryKey) {
+            valueA = getPrimaryKeyValue(a, selectedDataTypeObject.primaryKey);
+            valueB = getPrimaryKeyValue(b, selectedDataTypeObject.primaryKey);
+          } else {
+            valueA = '';
+            valueB = '';
+          }
+          break;
+        default:
+          valueA = '';
+          valueB = '';
+      }
+      
+      // Compare the values based on sort direction
+      if (typeof valueA === 'string' && typeof valueB === 'string') {
+        return sortDirection === 'asc' 
+          ? valueA.localeCompare(valueB)
+          : valueB.localeCompare(valueA);
+      } else {
+        // For numeric values like dates
+        return sortDirection === 'asc'
+          ? (valueA as number) - (valueB as number)
+          : (valueB as number) - (valueA as number);
+      }
+    });
+    
+    setFilteredDocuments(sortedDocs);
+  }, [sortField, sortDirection, allDocuments, selectedDataTypeObject]);
 
   return (
     <div className="space-y-6">
@@ -915,14 +959,86 @@ export function AnalyseTab() {
                   <Table>
                     <TableHeader>
                       <TableRow>
-                        <TableHead>Şube ID</TableHead>
+                        <TableHead 
+                          className="cursor-pointer hover:bg-slate-50"
+                          onClick={() => handleSort('branchId')}
+                        >
+                          <div className="flex items-center">
+                            Şube ID
+                            {sortField === 'branchId' && (
+                              sortDirection === 'asc' 
+                                ? <ArrowUp className="ml-1 h-4 w-4" /> 
+                                : <ArrowDown className="ml-1 h-4 w-4" />
+                            )}
+                          </div>
+                        </TableHead>
                         {selectedDataTypeObject?.primaryKey && (
-                          <TableHead>{selectedDataTypeObject.primaryKey}</TableHead>
+                          <TableHead 
+                            className="cursor-pointer hover:bg-slate-50"
+                            onClick={() => handleSort('primaryKey')}
+                          >
+                            <div className="flex items-center">
+                              {selectedDataTypeObject.primaryKey}
+                              {sortField === 'primaryKey' && (
+                                sortDirection === 'asc' 
+                                  ? <ArrowUp className="ml-1 h-4 w-4" /> 
+                                  : <ArrowDown className="ml-1 h-4 w-4" />
+                              )}
+                            </div>
+                          </TableHead>
                         )}
-                        <TableHead>Son Durum</TableHead>
-                        <TableHead>Referans Kodu</TableHead>
-                        <TableHead>Verinin Oluştuğu Tarih</TableHead>
-                        <TableHead>Silinme Süresine Kalan</TableHead>
+                        <TableHead 
+                          className="cursor-pointer hover:bg-slate-50"
+                          onClick={() => handleSort('status')}
+                        >
+                          <div className="flex items-center">
+                            Son Durum
+                            {sortField === 'status' && (
+                              sortDirection === 'asc' 
+                                ? <ArrowUp className="ml-1 h-4 w-4" /> 
+                                : <ArrowDown className="ml-1 h-4 w-4" />
+                            )}
+                          </div>
+                        </TableHead>
+                        <TableHead 
+                          className="cursor-pointer hover:bg-slate-50"
+                          onClick={() => handleSort('referenceCode')}
+                        >
+                          <div className="flex items-center">
+                            Referans Kodu
+                            {sortField === 'referenceCode' && (
+                              sortDirection === 'asc' 
+                                ? <ArrowUp className="ml-1 h-4 w-4" /> 
+                                : <ArrowDown className="ml-1 h-4 w-4" />
+                            )}
+                          </div>
+                        </TableHead>
+                        <TableHead 
+                          className="cursor-pointer hover:bg-slate-50"
+                          onClick={() => handleSort('createdAt')}
+                        >
+                          <div className="flex items-center">
+                            Verinin Oluştuğu Tarih
+                            {sortField === 'createdAt' && (
+                              sortDirection === 'asc' 
+                                ? <ArrowUp className="ml-1 h-4 w-4" /> 
+                                : <ArrowDown className="ml-1 h-4 w-4" />
+                            )}
+                          </div>
+                        </TableHead>
+                        <TableHead 
+                          className="cursor-pointer hover:bg-slate-50"
+                          onClick={() => handleSort('expiresAt')}
+                        >
+                          <div className="flex items-center">
+                            Silinme Süresine Kalan
+                            {sortField === 'expiresAt' && (
+                              sortDirection === 'asc' 
+                                ? <ArrowUp className="ml-1 h-4 w-4" /> 
+                                : <ArrowDown className="ml-1 h-4 w-4" />
+                            )}
+                          </div>
+                        </TableHead>
                         <TableHead>İşlemler</TableHead>
                       </TableRow>
                     </TableHeader>
@@ -1006,27 +1122,43 @@ export function AnalyseTab() {
 
       {/* JSON Viewer Modal */}
       <Dialog open={openDialog} onOpenChange={setOpenDialog}>
-        <DialogContent className="max-w-4xl">
+        <DialogContent className="max-w-5xl max-h-[90vh] overflow-hidden flex flex-col">
           <DialogHeader>
-            <DialogTitle>
-              Veri Detayı - {selectedDocument?.referenceCode}
+            <DialogTitle className="flex items-center justify-between">
+              <div>
+                <span className="font-bold">Döküman Detayı</span>
+                {selectedDocument && (
+                  <span className="ml-2 text-sm font-normal">
+                    ({selectedDocument.lastDocumentStatus} - {formatDateSimple(selectedDocument.createdAt)})
+                  </span>
+                )}
+              </div>
+              <DialogClose asChild>
+                <Button variant="ghost" size="icon" className="h-6 w-6">
+                  <X className="h-4 w-4" />
+                </Button>
+              </DialogClose>
             </DialogTitle>
             <DialogDescription>
-              {selectedDocument && `Son Durum: ${selectedDocument.lastDocumentStatus} | Oluşturulma: ${formatDateSimple(selectedDocument.createdAt)}`}
+              Döküman detaylarını inceleyebilirsiniz.
             </DialogDescription>
           </DialogHeader>
           
           {selectedDocument && (
-            <Tabs defaultValue="workflow" className="mt-4">
+            <Tabs defaultValue="workflow" className="flex-1 overflow-hidden flex flex-col">
               <TabsList className="grid w-full grid-cols-2">
                 <TabsTrigger value="workflow">İş Akışı</TabsTrigger>
-                <TabsTrigger value="data">Veri İçeriği</TabsTrigger>
+                <TabsTrigger value="data">Veri</TabsTrigger>
               </TabsList>
-              <TabsContent value="workflow" className="mt-4 overflow-hidden">
-                <WorkflowVisualization workflow={selectedDocument.workFlow} formatDate={formatDate} />
+              <TabsContent value="workflow" className="flex-1 overflow-hidden flex flex-col">
+                <div className="overflow-auto h-full">
+                  <WorkflowVisualization workflow={selectedDocument.workFlow || []} />
+                </div>
               </TabsContent>
-              <TabsContent value="data" className="mt-4 overflow-hidden">
-                <JsonViewer data={selectedDocument.data} />
+              <TabsContent value="data" className="flex-1 overflow-hidden flex flex-col">
+                <div className="overflow-auto h-full">
+                  <JsonViewer data={selectedDocument.data} />
+                </div>
               </TabsContent>
             </Tabs>
           )}
