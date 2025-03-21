@@ -770,18 +770,30 @@ export function AnalyseTab() {
                         <CommandEmpty>Firma bulunamadı.</CommandEmpty>
                         <CommandGroup>
                           <CommandList>
-                            {connections.map((connection) => (
-                              <CommandItem
-                                key={connection.id}
-                                value={connection.tenantId}
-                                onSelect={handleTenantChange}
-                              >
-                                {connection.name} ({connection.tenantId})
-                                {selectedTenant === connection.tenantId && (
-                                  <Check className="ml-auto h-4 w-4" />
-                                )}
+                            {connections.length === 0 ? (
+                              <CommandItem disabled>
+                                Firma bulunamadı
                               </CommandItem>
-                            ))}
+                            ) : (
+                              connections.map((option) => (
+                                <CommandItem
+                                  key={option.tenantId}
+                                  value={option.name}
+                                  onSelect={(currentValue) => {
+                                    // Find the option with matching label and use its value
+                                    const selectedOption = connections.find(opt => opt.name === currentValue);
+                                    if (selectedOption) {
+                                      handleTenantChange(selectedOption.tenantId);
+                                    }
+                                  }}
+                                >
+                                  {option.name}
+                                  {selectedTenant === option.tenantId && (
+                                    <Check className="ml-auto h-4 w-4" />
+                                  )}
+                                </CommandItem>
+                              ))
+                            )}
                           </CommandList>
                         </CommandGroup>
                       </Command>
@@ -826,8 +838,14 @@ export function AnalyseTab() {
                               dataTypeOptions.map((option) => (
                                 <CommandItem
                                   key={option.value}
-                                  value={option.value}
-                                  onSelect={handleDataTypeChange}
+                                  value={option.label}
+                                  onSelect={(currentValue) => {
+                                    // Find the option with matching label and use its value
+                                    const selectedOption = dataTypeOptions.find(opt => opt.label === currentValue);
+                                    if (selectedOption) {
+                                      handleDataTypeChange(selectedOption.value);
+                                    }
+                                  }}
                                 >
                                   {option.label}
                                   {selectedDataType === option.value && (
