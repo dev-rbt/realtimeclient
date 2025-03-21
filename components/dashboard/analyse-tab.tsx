@@ -761,7 +761,7 @@ export function AnalyseTab() {
                           connections.find((connection) => connection.tenantId === selectedTenant)?.name + 
                           ` (${selectedTenant})` : 
                           "Firma seçiniz"}
-                        <Search className="absolute left-2 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                        <Search className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                       </Button>
                     </PopoverTrigger>
                     <PopoverContent className="w-full p-0">
