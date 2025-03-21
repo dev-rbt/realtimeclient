@@ -13,8 +13,9 @@ import { SettingsTab } from './dashboard/settings-tab';
 import { QueriesTab } from './dashboard/queries-tab';
 import { CompanyCards } from "./dashboard/company-cards";
 import { SystemLogs } from './dashboard/system-logs';
+import { AnalyseTab } from './dashboard/analyse-tab';
 
-export default function Dashboard({metrics, error, logs, logsError}: {metrics: SystemMetrics | null, error: string | null, logs: SystemLog[] | null, logsError: string | null}) {
+export default function Dashboard({ metrics, error, logs, logsError }: { metrics: SystemMetrics | null, error: string | null, logs: SystemLog[] | null, logsError: string | null }) {
   const [restaurants, setRestaurants] = useState<Restaurant[]>([]);
   const [recentSyncs, setRecentSyncs] = useState<SyncData[]>([]);
   const [databases, setDatabases] = useState<DatabaseConnection[]>([]);
@@ -38,7 +39,7 @@ export default function Dashboard({metrics, error, logs, logsError}: {metrics: S
 
     const interval = setInterval(() => {
       setDatabases(generateDatabaseConnections());
-      setRestaurants(prev => 
+      setRestaurants(prev =>
         prev.map(rest => ({
           ...rest,
           lastSync: new Date(),
@@ -72,7 +73,7 @@ export default function Dashboard({metrics, error, logs, logsError}: {metrics: S
                 </h1>
                 <p className="text-muted-foreground mt-2">Gerçek zamanlı sistem monitörü</p>
               </div>
-              
+
             </div>
           </div>
 
@@ -80,9 +81,9 @@ export default function Dashboard({metrics, error, logs, logsError}: {metrics: S
             <Tabs defaultValue="overview" className="h-full flex flex-col">
               <TabsList className="grid w-full grid-cols-4 lg:grid-cols-7 bg-card/50 backdrop-blur-sm p-1 rounded-xl">
                 <TabsTrigger value="overview">Genel Bakış</TabsTrigger>
+                <TabsTrigger value="analyse">Veri Analizi</TabsTrigger>
                 <TabsTrigger value="branches">Şubeler</TabsTrigger>
-                {/* <TabsTrigger value="databases">Veritabanları</TabsTrigger>
-                <TabsTrigger value="sync">Senkronizasyon</TabsTrigger>
+                {/*<TabsTrigger value="sync">Senkronizasyon</TabsTrigger>
                 <TabsTrigger value="audit">İşlem Kayıtları</TabsTrigger> */}
                 <TabsTrigger value="queries">Sorgular</TabsTrigger>
                 <TabsTrigger value="settings">Ayarlar</TabsTrigger>
@@ -93,7 +94,7 @@ export default function Dashboard({metrics, error, logs, logsError}: {metrics: S
                   <div className="space-y-6">
                     <OverviewCards
                       metrics={metrics}
-                      lastSyncDate={recentSyncs[0]?.timestamp.toLocaleTimeString()}  
+                      lastSyncDate={recentSyncs[0]?.timestamp.toLocaleTimeString()}
                       totalRestaurantCount={restaurants.length}
                       activeRestaurantCount={restaurants.filter(r => r.status === 'active').length}
                       passiveRestaurantCount={restaurants.filter(r => r.status === 'idle').length}
@@ -104,10 +105,10 @@ export default function Dashboard({metrics, error, logs, logsError}: {metrics: S
                 <TabsContent value="branches" className="h-full overflow-auto m-0">
                   {/* <RestaurantsTable /> */}
                 </TabsContent>
-                {/* <TabsContent value="databases" className="h-full overflow-auto m-0">
-                  <DatabasesTab databases={databases} />
+                <TabsContent value="analyse" className="h-full overflow-auto m-0">
+                  <AnalyseTab />
                 </TabsContent>
-                <TabsContent value="sync" className="h-full overflow-auto m-0">
+                {/* <TabsContent value="sync" className="h-full overflow-auto m-0">
                   <SyncTab recentSyncs={recentSyncs} />
                 </TabsContent>
                 <TabsContent value="audit" className="h-full overflow-auto m-0">
