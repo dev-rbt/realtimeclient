@@ -3,7 +3,7 @@ import useApi from '@/hooks/use-api';
 import { useQueryStore } from '@/stores/useQueryStore';
 
 // Get documents from API
-export const getDocuments = async (filter: DocumentFilter): Promise<Document[]> => {
+export const getDocuments = async (filter: DocumentFilter): Promise<Record<string, Document[]>> => {
   try {
     // Build query parameters
     const params = new URLSearchParams();
@@ -16,7 +16,7 @@ export const getDocuments = async (filter: DocumentFilter): Promise<Document[]> 
     
     // Make API call
     const api = useApi();
-    const response = await api.get<Document[]>(`/system/analyse?${params.toString()}`);
+    const response = await api.get<Record<string, Document[]>>(`/system/analyse?${params.toString()}`);
     return response.data;
   } catch (error) {
     console.error('Error fetching documents:', error);
@@ -24,59 +24,12 @@ export const getDocuments = async (filter: DocumentFilter): Promise<Document[]> 
     // For development fallback to mock data
     if (process.env.NODE_ENV === 'development') {
       console.warn('Using mock data for development');
-      return generateMockDocuments(20);
     }
     
     throw error;
   }
 };
 
-// Mock data for development purposes (keeping this for fallback)
-export const generateMockDocuments = (count: number): Document[] => {
-  const statuses = ['Created', 'Processing', 'Completed', 'Error', 'Ignore'];
-  const tenants = ['ABC', 'XYZ', 'DEF', 'GHI', 'JKL'];
-  const dataTypes = ['Sales', 'Inventory', 'Customer', 'Payment', 'Order'];
-  
-  return Array.from({ length: count }, (_, i) => {
-    const createdAt = new Date();
-    createdAt.setDate(createdAt.getDate() - Math.floor(Math.random() * 30));
-    
-    const expiresAt = new Date(createdAt);
-    expiresAt.setDate(expiresAt.getDate() + 90); // 90 days retention
-    
-    return {
-      id: `doc_${i}_${Date.now()}`,
-      referenceCode: `REF-${Math.floor(Math.random() * 1000000)}`,
-      branchId: Math.floor(Math.random() * 100) + 1,
-      tenantId: tenants[Math.floor(Math.random() * tenants.length)],
-      lastDocumentStatus: statuses[Math.floor(Math.random() * statuses.length)] as any,
-      errorCount: Math.floor(Math.random() * 3),
-      workFlow: [
-        {
-          status: 'Created' as any,
-          timestamp: new Date(createdAt),
-          message: 'Document created'
-        }
-      ],
-      data: {
-        type: dataTypes[Math.floor(Math.random() * dataTypes.length)],
-        content: { 
-          id: Math.floor(Math.random() * 1000),
-          name: `Sample ${dataTypes[Math.floor(Math.random() * dataTypes.length)]} Data`,
-          amount: Math.floor(Math.random() * 10000) / 100,
-          items: Array.from({ length: Math.floor(Math.random() * 5) + 1 }, (_, j) => ({
-            id: j,
-            name: `Item ${j}`,
-            quantity: Math.floor(Math.random() * 10) + 1,
-            price: Math.floor(Math.random() * 1000) / 100
-          }))
-        }
-      },
-      createdAt,
-      expiresAt
-    };
-  });
-};
 
 // Function to filter documents based on filter criteria
 const filterDocuments = (documents: Document[], filter: DocumentFilter): Document[] => {

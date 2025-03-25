@@ -1,68 +1,68 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { 
-  Card, 
-  CardContent, 
-  CardHeader, 
-  CardTitle 
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle
 } from '@/components/ui/card';
-import { 
-  Select, 
-  SelectContent, 
-  SelectItem, 
-  SelectTrigger, 
-  SelectValue 
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue
 } from '@/components/ui/select';
-import { 
-  Table, 
-  TableBody, 
-  TableCell, 
-  TableHead, 
-  TableHeader, 
-  TableRow 
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow
 } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
-import { 
-  Dialog, 
-  DialogContent, 
-  DialogHeader, 
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
   DialogTitle,
   DialogDescription,
   DialogClose
 } from '@/components/ui/dialog';
 import { format } from 'date-fns';
 import { tr } from 'date-fns/locale';
-import { 
-  AlertCircle, 
+import {
+  AlertCircle,
   ArrowDown,
-  ArrowLeft, 
-  ArrowRight, 
-  ArrowUp, 
-  Check, 
-  ChevronLeft, 
-  ChevronRight, 
-  ChevronsLeft, 
-  ChevronsRight, 
-  Copy, 
-  Loader2, 
+  ArrowLeft,
+  ArrowRight,
+  ArrowUp,
+  Check,
+  ChevronLeft,
+  ChevronRight,
+  ChevronsLeft,
+  ChevronsRight,
+  Copy,
+  Loader2,
   Search,
   X
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useToast } from '@/components/ui/use-toast';
-import { 
-  Document, 
-  DocumentFilter, 
-  DocumentStatus, 
-  DataTypeOption, 
+import {
+  Document,
+  DocumentFilter,
+  DocumentStatus,
+  DataTypeOption,
   StatusOption,
   DateRangeOption,
   DateRangeOptionType,
   WorkFlow
 } from '@/lib/document-types';
-import { 
-  getDocuments, 
+import {
+  getDocuments,
   getDataTypeOptions,
   getStatusOptions,
   getDateRangeOptions
@@ -76,7 +76,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 // JSON Viewer component with copy button
 const JsonViewer = ({ data }: { data: any }) => {
   const { toast } = useToast();
-  
+
   const handleCopy = () => {
     const jsonString = JSON.stringify(data, null, 2);
     navigator.clipboard.writeText(jsonString)
@@ -87,13 +87,13 @@ const JsonViewer = ({ data }: { data: any }) => {
           description: "Veri içeriği panoya kopyalandı.",
           duration: 3000,
         });
-        
+
         // Also update the button text temporarily
         const copyButton = document.getElementById('json-copy-button');
         if (copyButton) {
           const originalText = copyButton.innerHTML;
           copyButton.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-4 w-4"><polyline points="20 6 9 17 4 12"></polyline></svg><span>Kopyalandı!</span>';
-          
+
           setTimeout(() => {
             copyButton.innerHTML = originalText;
           }, 2000);
@@ -109,14 +109,14 @@ const JsonViewer = ({ data }: { data: any }) => {
         });
       });
   };
-  
+
   return (
     <div className="relative w-full h-full">
       <div className="flex justify-end mb-2">
-        <Button 
+        <Button
           id="json-copy-button"
-          variant="outline" 
-          size="sm" 
+          variant="outline"
+          size="sm"
           onClick={handleCopy}
           className="flex items-center gap-1"
         >
@@ -160,21 +160,21 @@ const getRemainingTime = (expiresAt: Date): string => {
   try {
     const now = new Date();
     const expirationDate = new Date(expiresAt);
-    
+
     // Check if date is valid
     if (isNaN(expirationDate.getTime())) {
       return 'Geçersiz tarih';
     }
-    
+
     const diffInMs = expirationDate.getTime() - now.getTime();
-    
+
     if (diffInMs <= 0) {
       return 'Süresi doldu';
     }
-    
+
     const diffInDays = Math.floor(diffInMs / (1000 * 60 * 60 * 24));
     const diffInHours = Math.floor((diffInMs % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-    
+
     return `${diffInDays} gün ${diffInHours} saat`;
   } catch (error) {
     return 'Geçersiz tarih';
@@ -215,7 +215,7 @@ const WorkflowVisualization = ({ workflow = [] }: { workflow?: WorkFlow[] }) => 
             const status = item.status || item.documentStatus || 'Unknown';
             const timestamp = item.timestamp || item.createdAt;
             const message = item.message || item.description || '';
-            
+
             return (
               <div key={itemIndex} className="flex flex-col items-center">
                 <div className={`p-3 rounded-md border ${statusColors[status] || 'bg-gray-100 border-gray-300'} min-w-[180px]`}>
@@ -223,7 +223,7 @@ const WorkflowVisualization = ({ workflow = [] }: { workflow?: WorkFlow[] }) => 
                   <div className="text-xs mt-1">{formatDate(timestamp)}</div>
                   {message && <div className="text-xs mt-1 italic">{message}</div>}
                 </div>
-                
+
                 {/* Arrows between items */}
                 {itemIndex < row.length - 1 && (
                   <div className="flex-1 px-2">
@@ -239,7 +239,7 @@ const WorkflowVisualization = ({ workflow = [] }: { workflow?: WorkFlow[] }) => 
           })}
         </div>
       ))}
-      
+
       {/* Vertical arrows between rows */}
       {rows.length > 1 && rows.map((_, rowIndex) => (
         rowIndex < rows.length - 1 && (
@@ -307,10 +307,10 @@ const copyToClipboard = (text: string, toast: any, event?: React.MouseEvent<HTML
     // Store original content
     const button = event.currentTarget;
     const originalContent = button.innerHTML;
-    
+
     // Change to checkmark
     button.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-3.5 w-3.5"><polyline points="20 6 9 17 4 12"></polyline></svg>';
-    
+
     // Copy the text
     navigator.clipboard.writeText(text)
       .then(() => {
@@ -320,7 +320,7 @@ const copyToClipboard = (text: string, toast: any, event?: React.MouseEvent<HTML
           description: "Değer panoya kopyalandı.",
           duration: 3000,
         });
-        
+
         // Reset button after delay
         setTimeout(() => {
           button.innerHTML = originalContent;
@@ -334,7 +334,7 @@ const copyToClipboard = (text: string, toast: any, event?: React.MouseEvent<HTML
           variant: "destructive",
           duration: 3000,
         });
-        
+
         // Reset button immediately on error
         button.innerHTML = originalContent;
       });
@@ -363,22 +363,22 @@ const copyToClipboard = (text: string, toast: any, event?: React.MouseEvent<HTML
 // Get primary key value from document data
 const getPrimaryKeyValue = (document: Document, primaryKey?: string): string => {
   if (!primaryKey || !document.data) return '-';
-  
+
   try {
     // First check if the value exists directly in the Data object
     if (document.data[primaryKey]) {
       return document.data[primaryKey]?.toString() || '-';
     }
-    
+
     // If not, check if it's in Data.Clause.{primaryKey}
     if (document.data.Clause && document.data.Clause[primaryKey]) {
       return document.data.Clause[primaryKey]?.toString() || '-';
     }
-    
+
     // If still not found, try to access using the path notation
     const path = primaryKey.split('.');
     let value: any = document.data;
-    
+
     for (const key of path) {
       if (value && typeof value === 'object' && key in value) {
         value = value[key];
@@ -386,7 +386,7 @@ const getPrimaryKeyValue = (document: Document, primaryKey?: string): string => 
         return '-';
       }
     }
-    
+
     return value?.toString() || '-';
   } catch (error) {
     return '-';
@@ -396,50 +396,50 @@ const getPrimaryKeyValue = (document: Document, primaryKey?: string): string => 
 export function AnalyseTab() {
   const { toast } = useToast();
   const { connections, isLoading: isLoadingConnections, error: connectionsError, fetchConnections } = useConnectionsStore();
-  
+
   // State for filter options
   const [dataTypeOptions, setDataTypeOptions] = useState<DataTypeOption[]>([]);
   const [statusOptions, setStatusOptions] = useState<StatusOption[]>([]);
   const [dateRangeOptions, setDateRangeOptions] = useState<DateRangeOptionType[]>([]);
-  
+
   // State for selected filter values
   const [selectedTenant, setSelectedTenant] = useState<string>('');
   const [selectedDataType, setSelectedDataType] = useState<string>('');
-  const [selectedStatus, setSelectedStatus] = useState<string>('all');
-  const [selectedDateRange, setSelectedDateRange] = useState<string>(DateRangeOption.All);
+  const [selectedStatus, setSelectedStatus] = useState<string>(DocumentStatus.Error);
+  const [selectedDateRange, setSelectedDateRange] = useState<string>(DateRangeOption.Today);
   const [primaryKeyValue, setPrimaryKeyValue] = useState<string>('');
   const [selectedDataTypeObject, setSelectedDataTypeObject] = useState<DataTypeOption | null>(null);
-  
+
   // State for dropdown popovers
   const [tenantOpen, setTenantOpen] = useState(false);
   const [dataTypeOpen, setDataTypeOpen] = useState(false);
-  
+
   // State for documents and loading
-  const [allDocuments, setAllDocuments] = useState<Document[]>([]);
-  const [documents, setDocuments] = useState<Document[]>([]);
+  const [allDocuments, setAllDocuments] = useState<Record<string, Document[]>>({});
+  const [documents, setDocuments] = useState<Record<string, Document[]>>({});
   const [loading, setLoading] = useState<boolean>(false);
   const [loadingOptions, setLoadingOptions] = useState<boolean>(true);
   const [loadingDataTypes, setLoadingDataTypes] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
   const [showTable, setShowTable] = useState<boolean>(false);
-  
+
   // State for pagination
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [itemsPerPage, setItemsPerPage] = useState<number>(10);
   const [totalPages, setTotalPages] = useState<number>(1);
-  
+
   // State for search
   const [searchTerm, setSearchTerm] = useState<string>('');
-  const [filteredDocuments, setFilteredDocuments] = useState<Document[]>([]);
-  
+  const [filteredDocuments, setFilteredDocuments] = useState<Record<string, Document[]>>({});
+
   // State for sorting
   const [sortField, setSortField] = useState<string | null>(null);
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
-  
+
   // State for JSON viewer modal
   const [selectedDocument, setSelectedDocument] = useState<Document | null>(null);
   const [openDialog, setOpenDialog] = useState<boolean>(false);
-  
+
   // Load filter options on component mount
   useEffect(() => {
     const loadFilterOptions = async () => {
@@ -447,13 +447,13 @@ export function AnalyseTab() {
       try {
         // Fetch connections using the store
         await fetchConnections();
-        
+
         // Fetch other filter options (except data types which depend on tenant)
         const [statuses, dateRanges] = await Promise.all([
           getStatusOptions(),
           getDateRangeOptions()
         ]);
-        
+
         setStatusOptions(statuses as StatusOption[]);
         setDateRangeOptions(dateRanges as DateRangeOptionType[]);
         setError(null);
@@ -469,10 +469,10 @@ export function AnalyseTab() {
         setLoadingOptions(false);
       }
     };
-    
+
     loadFilterOptions();
   }, [toast, fetchConnections]);
-  
+
   // Load data types when tenant changes
   useEffect(() => {
     const loadDataTypes = async () => {
@@ -483,12 +483,12 @@ export function AnalyseTab() {
         setPrimaryKeyValue('');
         return;
       }
-      
+
       setLoadingDataTypes(true);
       try {
         const dataTypes = await getDataTypeOptions(selectedTenant);
         setDataTypeOptions(dataTypes);
-        
+
         // Reset selected data type if it's not in the new options
         if (selectedDataType && !dataTypes.some((dt: DataTypeOption) => dt.value === selectedDataType)) {
           setSelectedDataType('');
@@ -506,52 +506,87 @@ export function AnalyseTab() {
         setLoadingDataTypes(false);
       }
     };
-    
+
     loadDataTypes();
   }, [selectedTenant, selectedDataType, toast]);
-  
+
   // Update documents when page changes or all documents change
   useEffect(() => {
-    if (allDocuments.length === 0) {
-      setDocuments([]);
+    if (Object.values(allDocuments).length === 0) {
+      setDocuments({});
       setTotalPages(1);
       return;
     }
-    
+
     // Filter documents based on search term
-    const filtered = searchTerm 
-      ? allDocuments.filter(doc => {
-          const searchLower = searchTerm.toLowerCase();
-          return (
-            (doc.referenceCode?.toLowerCase() || '').includes(searchLower) ||
-            (doc.lastDocumentStatus?.toLowerCase() || '').includes(searchLower) ||
-            (doc.branchId?.toString() || '').toLowerCase().includes(searchLower) ||
-            (selectedDataTypeObject?.primaryKey && 
-              (getPrimaryKeyValue(doc, selectedDataTypeObject.primaryKey).toString().toLowerCase() || '').includes(searchLower))
-          );
+    const filtered = searchTerm
+      ? Object.fromEntries(
+        Object.entries(allDocuments).map(([key, docs]) => {
+          // Her anahtardaki dokümanları filtrele
+          const filteredDocs = docs.filter((d: Document) => {
+            const searchLower = searchTerm.toLowerCase();
+            return (
+              (d.referenceCode?.toLowerCase() || '').includes(searchLower) ||
+              (d.lastDocumentStatus?.toLowerCase() || '').includes(searchLower) ||
+              (d.branchId?.toString() || '').toLowerCase().includes(searchLower) ||
+              (selectedDataTypeObject?.primaryKey &&
+                (getPrimaryKeyValue(d, selectedDataTypeObject.primaryKey).toString().toLowerCase() || '').includes(searchLower))
+            );
+          });
+
+          // Anahtar ve filtrelenmiş dokümanları döndür
+          return [key, filteredDocs];
         })
+      )
       : allDocuments;
-    
+
     setFilteredDocuments(filtered);
-    
+
     // Calculate total pages
-    const calculatedTotalPages = Math.ceil(filtered.length / itemsPerPage);
+    const totalDocumentCount = Object.values(filtered).reduce(
+      (total, docs) => total + docs.length,
+      0
+    );
+
+    const calculatedTotalPages = Math.ceil(totalDocumentCount / itemsPerPage);
     setTotalPages(calculatedTotalPages);
-    
+
     // Ensure current page is valid
     const validCurrentPage = Math.min(currentPage, calculatedTotalPages);
     if (validCurrentPage !== currentPage) {
       setCurrentPage(validCurrentPage);
     }
-    
+
     // Calculate start and end indices
     const startIndex = (validCurrentPage - 1) * itemsPerPage;
     const endIndex = startIndex + itemsPerPage;
-    
-    // Set documents for current page
-    setDocuments(filtered.slice(startIndex, endIndex));
+
+    // Tüm belgeleri düz bir diziye dönüştür ve indeksleri izle
+    let flatDocuments: { key: string; docIndex: number; document: Document }[] = [];
+
+    Object.entries(filtered).forEach(([key, docs]) => {
+      docs.forEach((doc, docIndex) => {
+        flatDocuments.push({ key, docIndex, document: doc });
+      });
+    });
+
+    // Sayfalama yap
+    const paginatedFlatDocuments = flatDocuments.slice(startIndex, endIndex);
+
+    // Sayfalanmış belgeleri orijinal yapıya geri dönüştür
+    const paginatedDocuments: Record<string, Document[]> = {};
+
+    paginatedFlatDocuments.forEach(({ key, document }) => {
+      if (!paginatedDocuments[key]) {
+        paginatedDocuments[key] = [];
+      }
+      paginatedDocuments[key].push(document);
+    });
+
+    // Belgeleri ayarla
+    setDocuments(paginatedDocuments);
   }, [allDocuments, currentPage, itemsPerPage, searchTerm]);
-  
+
   // Function to handle tenant change
   const handleTenantChange = (value: string) => {
     setSelectedTenant(value);
@@ -561,37 +596,37 @@ export function AnalyseTab() {
     setShowTable(false); // Hide table when tenant changes
     setTenantOpen(false); // Close the popover
   };
-  
+
   // Function to handle data type change
   const handleDataTypeChange = (value: string) => {
     setSelectedDataType(value);
-    
+
     // Find the selected data type object to get the primaryKey
     const selectedOption = dataTypeOptions.find(option => option.value === value) || null;
     setSelectedDataTypeObject(selectedOption);
-    
+
     // Reset primary key value when data type changes
     setPrimaryKeyValue('');
-    
+
     setDataTypeOpen(false); // Close the popover
   };
-  
+
   // Function to handle page change
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
   };
-  
+
   // Function to handle items per page change
   const handleItemsPerPageChange = (value: string) => {
     setItemsPerPage(Number(value));
     setCurrentPage(1); // Reset to first page when changing items per page
   };
-  
+
   // Function to load documents based on filters
   const loadDocuments = async () => {
     setLoading(true);
     setError(null);
-    
+
     try {
       const filter: DocumentFilter = {
         tenantId: selectedTenant || undefined,
@@ -601,13 +636,13 @@ export function AnalyseTab() {
         primaryKey: selectedDataTypeObject?.primaryKey || undefined,
         primaryKeyValue: primaryKeyValue || undefined
       };
-      
+
       const data = await getDocuments(filter);
       setAllDocuments(data);
       setCurrentPage(1); // Reset to first page when loading new data
       setShowTable(true);
-      
-      if (data.length === 0) {
+
+      if (Object.entries(data).length === 0) {
         toast({
           title: "Bilgi",
           description: "Seçilen kriterlere uygun veri bulunamadı.",
@@ -625,34 +660,42 @@ export function AnalyseTab() {
       setLoading(false);
     }
   };
-  
+
   // Function to view document data
   const handleViewDocument = (document: Document) => {
     setSelectedDocument(document);
     setOpenDialog(true);
   };
-  
+
   // Function to handle search input change
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
     setSearchTerm(value);
-    
+
     // Filter documents based on search term
-    const filtered = allDocuments.filter(doc => {
-      const searchLower = value.toLowerCase();
-      return (
-        (doc.referenceCode?.toLowerCase() || '').includes(searchLower) ||
-        (doc.lastDocumentStatus?.toLowerCase() || '').includes(searchLower) ||
-        (doc.branchId?.toString() || '').toLowerCase().includes(searchLower) ||
-        (selectedDataTypeObject?.primaryKey && 
-          (getPrimaryKeyValue(doc, selectedDataTypeObject.primaryKey).toString().toLowerCase() || '').includes(searchLower))
-      );
-    });
-    
+    const filtered = Object.fromEntries(
+      Object.entries(allDocuments).map(([key, docs]) => {
+        // Her anahtardaki dokümanları filtrele
+        const filteredDocs = docs.filter((d: Document) => {
+          const searchLower = searchTerm.toLowerCase();
+          return (
+            (d.referenceCode?.toLowerCase() || '').includes(searchLower) ||
+            (d.lastDocumentStatus?.toLowerCase() || '').includes(searchLower) ||
+            (d.branchId?.toString() || '').toLowerCase().includes(searchLower) ||
+            (selectedDataTypeObject?.primaryKey &&
+              (getPrimaryKeyValue(d, selectedDataTypeObject.primaryKey).toString().toLowerCase() || '').includes(searchLower))
+          );
+        });
+
+        // Anahtar ve filtrelenmiş dokümanları döndür
+        return [key, filteredDocs];
+      })
+    );
+
     setFilteredDocuments(filtered);
     setCurrentPage(1); // Reset to first page when search changes
   };
-  
+
   // Function to handle sorting
   const handleSort = (field: string) => {
     // If clicking the same field, toggle direction
@@ -664,42 +707,53 @@ export function AnalyseTab() {
       setSortDirection('asc');
     }
   };
-  
+
   // Apply sorting to filtered documents
   useEffect(() => {
     if (!sortField) {
       return;
     }
-    
-    const sortedDocs = [...filteredDocuments].sort((a, b) => {
+
+    let flatDocuments: { key: string; document: Document }[] = [];
+
+    Object.entries(filteredDocuments).forEach(([key, docs]) => {
+      docs.forEach((doc) => {
+        flatDocuments.push({ key, document: doc });
+      });
+    });
+
+    // Belgeleri sırala
+    const sortedFlatDocuments = [...flatDocuments].sort((a, b) => {
       let valueA, valueB;
-      
+      const docA = a.document;
+      const docB = b.document;
+
       // Get the appropriate values based on the sort field
       switch (sortField) {
         case 'branchId':
-          valueA = a.branchId || '';
-          valueB = b.branchId || '';
+          valueA = docA.branchId || '';
+          valueB = docB.branchId || '';
           break;
         case 'status':
-          valueA = a.lastDocumentStatus || '';
-          valueB = b.lastDocumentStatus || '';
+          valueA = docA.lastDocumentStatus || '';
+          valueB = docB.lastDocumentStatus || '';
           break;
         case 'referenceCode':
-          valueA = a.referenceCode || '';
-          valueB = b.referenceCode || '';
+          valueA = docA.referenceCode || '';
+          valueB = docB.referenceCode || '';
           break;
         case 'createdAt':
-          valueA = new Date(a.createdAt || 0).getTime();
-          valueB = new Date(b.createdAt || 0).getTime();
+          valueA = new Date(docA.createdAt || 0).getTime();
+          valueB = new Date(docB.createdAt || 0).getTime();
           break;
         case 'expiresAt':
-          valueA = new Date(a.expiresAt || 0).getTime();
-          valueB = new Date(b.expiresAt || 0).getTime();
+          valueA = new Date(docA.expiresAt || 0).getTime();
+          valueB = new Date(docB.expiresAt || 0).getTime();
           break;
         case 'primaryKey':
           if (selectedDataTypeObject?.primaryKey) {
-            valueA = getPrimaryKeyValue(a, selectedDataTypeObject.primaryKey);
-            valueB = getPrimaryKeyValue(b, selectedDataTypeObject.primaryKey);
+            valueA = getPrimaryKeyValue(docA, selectedDataTypeObject.primaryKey);
+            valueB = getPrimaryKeyValue(docB, selectedDataTypeObject.primaryKey);
           } else {
             valueA = '';
             valueB = '';
@@ -709,21 +763,28 @@ export function AnalyseTab() {
           valueA = '';
           valueB = '';
       }
-      
-      // Compare the values based on sort direction
-      if (typeof valueA === 'string' && typeof valueB === 'string') {
-        return sortDirection === 'asc' 
-          ? valueA.localeCompare(valueB)
-          : valueB.localeCompare(valueA);
-      } else {
-        // For numeric values like dates
-        return sortDirection === 'asc'
-          ? (valueA as number) - (valueB as number)
-          : (valueB as number) - (valueA as number);
+
+      // Determine the sort order
+      if (valueA < valueB) {
+        return sortDirection === 'asc' ? -1 : 1;
       }
+      if (valueA > valueB) {
+        return sortDirection === 'asc' ? 1 : -1;
+      }
+      return 0;
     });
-    
-    setFilteredDocuments(sortedDocs);
+
+    // Sıralanmış belgeleri orijinal yapıya geri dönüştür
+    const sortedDocuments: Record<string, Document[]> = {};
+
+    sortedFlatDocuments.forEach(({ key, document }) => {
+      if (!sortedDocuments[key]) {
+        sortedDocuments[key] = [];
+      }
+      sortedDocuments[key].push(document);
+    });
+
+    setFilteredDocuments(sortedDocuments);
   }, [sortField, sortDirection, allDocuments, selectedDataTypeObject]);
 
   return (
@@ -757,9 +818,9 @@ export function AnalyseTab() {
                         aria-expanded={tenantOpen}
                         className="w-full justify-between"
                       >
-                        {selectedTenant ? 
-                          connections.find((connection) => connection.tenantId === selectedTenant)?.name + 
-                          ` (${selectedTenant})` : 
+                        {selectedTenant ?
+                          connections.find((connection) => connection.tenantId === selectedTenant)?.name +
+                          ` (${selectedTenant})` :
                           "Firma seçiniz"}
                         <Search className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                       </Button>
@@ -800,7 +861,7 @@ export function AnalyseTab() {
                     </PopoverContent>
                   </Popover>
                 </div>
-                
+
                 {/* Data Type Filter with Search */}
                 <div className="space-y-2">
                   <label className="text-sm font-medium">Veri Türü Seçiniz</label>
@@ -818,8 +879,8 @@ export function AnalyseTab() {
                             <Loader2 className="h-4 w-4 animate-spin mr-2" />
                             <span>Yükleniyor...</span>
                           </div>
-                        ) : selectedDataType ? 
-                          dataTypeOptions.find((option) => option.value === selectedDataType)?.label : 
+                        ) : selectedDataType ?
+                          dataTypeOptions.find((option) => option.value === selectedDataType)?.label :
                           "Veri türü seçiniz"}
                         {!loadingDataTypes && <Search className="ml-2 h-4 w-4 shrink-0 opacity-50" />}
                       </Button>
@@ -860,7 +921,7 @@ export function AnalyseTab() {
                     </PopoverContent>
                   </Popover>
                 </div>
-                
+
 
                 {/* Status Filter */}
                 <div className="space-y-2">
@@ -878,7 +939,7 @@ export function AnalyseTab() {
                     </SelectContent>
                   </Select>
                 </div>
-                
+
                 {/* Date Range Filter */}
                 <div className="space-y-2">
                   <label className="text-sm font-medium">Tarih Aralığı Seçiniz</label>
@@ -888,7 +949,7 @@ export function AnalyseTab() {
                     </SelectTrigger>
                     <SelectContent>
                       {dateRangeOptions.map((option) => (
-                        <SelectItem key={option.value} value={option.value}>
+                        <SelectItem key={option.value} value={option.value} >
                           {option.label}
                         </SelectItem>
                       ))}
@@ -896,8 +957,8 @@ export function AnalyseTab() {
                   </Select>
                 </div>
 
-                                {/* Primary Key Input - Only show if selectedDataTypeObject has a primaryKey */}
-                                {selectedDataTypeObject && selectedDataTypeObject.primaryKey && (
+                {/* Primary Key Input - Only show if selectedDataTypeObject has a primaryKey */}
+                {selectedDataTypeObject && selectedDataTypeObject.primaryKey && (
                   <div className="space-y-2">
                     <label className="text-sm font-medium">{selectedDataTypeObject.primaryKey}(Opsiyonel)</label>
                     <Input
@@ -907,12 +968,12 @@ export function AnalyseTab() {
                     />
                   </div>
                 )}
-                
+
               </div>
-              
+
               <div className="mt-6 flex justify-end">
-                <Button 
-                  onClick={loadDocuments} 
+                <Button
+                  onClick={loadDocuments}
                   disabled={loading || !selectedTenant}
                 >
                   {loading ? (
@@ -929,7 +990,7 @@ export function AnalyseTab() {
           )}
         </CardContent>
       </Card>
-      
+
       {showTable && (
         <Card>
           <CardHeader className="flex flex-row items-center justify-between">
@@ -969,90 +1030,111 @@ export function AnalyseTab() {
                     />
                   </div>
                   <div className="ml-auto text-sm text-muted-foreground">
-                    Toplam {filteredDocuments.length} kayıt, {documents.length > 0 ? (currentPage - 1) * itemsPerPage + 1 : 0} - {Math.min(currentPage * itemsPerPage, filteredDocuments.length)} arası gösteriliyor
+                    Toplam {Object.values(filteredDocuments).flat().length} kayıt,
+                    {Object.values(documents).flat().length > 0
+                      ? (currentPage - 1) * itemsPerPage + 1
+                      : 0} -
+                    {Math.min(
+                      currentPage * itemsPerPage,
+                      Object.values(filteredDocuments).flat().length
+                    )} arası gösteriliyor
                   </div>
                 </div>
-                
+
                 <div className="rounded-md border">
                   <Table>
                     <TableHeader>
                       <TableRow>
-                        <TableHead 
+                        <TableHead
                           className="cursor-pointer hover:bg-slate-50"
                           onClick={() => handleSort('branchId')}
                         >
                           <div className="flex items-center">
                             Şube ID
                             {sortField === 'branchId' && (
-                              sortDirection === 'asc' 
-                                ? <ArrowUp className="ml-1 h-4 w-4" /> 
+                              sortDirection === 'asc'
+                                ? <ArrowUp className="ml-1 h-4 w-4" />
+                                : <ArrowDown className="ml-1 h-4 w-4" />
+                            )}
+                          </div>
+                        </TableHead>
+                        <TableHead
+                          className="cursor-pointer hover:bg-slate-50"
+                          onClick={() => handleSort('key')}
+                        >
+                          <div className="flex items-center">
+                            Veri Türü
+                            {sortField === 'key' && (
+                              sortDirection === 'asc'
+                                ? <ArrowUp className="ml-1 h-4 w-4" />
                                 : <ArrowDown className="ml-1 h-4 w-4" />
                             )}
                           </div>
                         </TableHead>
                         {selectedDataTypeObject?.primaryKey && (
-                          <TableHead 
+                          <TableHead
                             className="cursor-pointer hover:bg-slate-50"
                             onClick={() => handleSort('primaryKey')}
                           >
                             <div className="flex items-center">
                               {selectedDataTypeObject.primaryKey}
                               {sortField === 'primaryKey' && (
-                                sortDirection === 'asc' 
-                                  ? <ArrowUp className="ml-1 h-4 w-4" /> 
+                                sortDirection === 'asc'
+                                  ? <ArrowUp className="ml-1 h-4 w-4" />
                                   : <ArrowDown className="ml-1 h-4 w-4" />
                               )}
                             </div>
                           </TableHead>
                         )}
-                        <TableHead 
+
+                        <TableHead
                           className="cursor-pointer hover:bg-slate-50"
                           onClick={() => handleSort('status')}
                         >
                           <div className="flex items-center">
                             Son Durum
                             {sortField === 'status' && (
-                              sortDirection === 'asc' 
-                                ? <ArrowUp className="ml-1 h-4 w-4" /> 
+                              sortDirection === 'asc'
+                                ? <ArrowUp className="ml-1 h-4 w-4" />
                                 : <ArrowDown className="ml-1 h-4 w-4" />
                             )}
                           </div>
                         </TableHead>
-                        <TableHead 
+                        <TableHead
                           className="cursor-pointer hover:bg-slate-50"
                           onClick={() => handleSort('referenceCode')}
                         >
                           <div className="flex items-center">
                             Referans Kodu
                             {sortField === 'referenceCode' && (
-                              sortDirection === 'asc' 
-                                ? <ArrowUp className="ml-1 h-4 w-4" /> 
+                              sortDirection === 'asc'
+                                ? <ArrowUp className="ml-1 h-4 w-4" />
                                 : <ArrowDown className="ml-1 h-4 w-4" />
                             )}
                           </div>
                         </TableHead>
-                        <TableHead 
+                        <TableHead
                           className="cursor-pointer hover:bg-slate-50"
                           onClick={() => handleSort('createdAt')}
                         >
                           <div className="flex items-center">
                             Verinin Oluştuğu Tarih
                             {sortField === 'createdAt' && (
-                              sortDirection === 'asc' 
-                                ? <ArrowUp className="ml-1 h-4 w-4" /> 
+                              sortDirection === 'asc'
+                                ? <ArrowUp className="ml-1 h-4 w-4" />
                                 : <ArrowDown className="ml-1 h-4 w-4" />
                             )}
                           </div>
                         </TableHead>
-                        <TableHead 
+                        <TableHead
                           className="cursor-pointer hover:bg-slate-50"
                           onClick={() => handleSort('expiresAt')}
                         >
                           <div className="flex items-center">
                             Silinme Süresine Kalan
                             {sortField === 'expiresAt' && (
-                              sortDirection === 'asc' 
-                                ? <ArrowUp className="ml-1 h-4 w-4" /> 
+                              sortDirection === 'asc'
+                                ? <ArrowUp className="ml-1 h-4 w-4" />
                                 : <ArrowDown className="ml-1 h-4 w-4" />
                             )}
                           </div>
@@ -1061,72 +1143,75 @@ export function AnalyseTab() {
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      {documents.length === 0 ? (
+                      {Object.values(documents).flat().length === 0 ? (
                         <TableRow>
                           <TableCell colSpan={selectedDataTypeObject?.primaryKey ? 7 : 6} className="text-center py-4">
                             Veri bulunamadı
                           </TableCell>
                         </TableRow>
                       ) : (
-                        documents.map((document) => (
-                          <TableRow key={document.id}>
-                            <TableCell>{document.branchId}</TableCell>
-                            {selectedDataTypeObject?.primaryKey && (
+                        Object.entries(documents).flatMap(([key, docArray]) =>
+                          docArray.map((document) => (
+                            <TableRow key={document.id}>
+                              <TableCell>{document.branchId}</TableCell>
+                              <TableCell>{key}</TableCell>
+                              {selectedDataTypeObject?.primaryKey && (
+                                <TableCell>
+                                  <div className="flex items-center gap-1">
+                                    <span>{getPrimaryKeyValue(document, selectedDataTypeObject.primaryKey)}</span>
+                                    <Button
+                                      variant="ghost"
+                                      size="icon"
+                                      className="h-6 w-6 hover:bg-green-50"
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        copyToClipboard(getPrimaryKeyValue(document, selectedDataTypeObject.primaryKey), toast, e);
+                                      }}
+                                      title="Kopyala"
+                                    >
+                                      <Copy className="h-3.5 w-3.5" />
+                                    </Button>
+                                  </div>
+                                </TableCell>
+                              )}
                               <TableCell>
-                                <div className="flex items-center gap-1">
-                                  <span>{getPrimaryKeyValue(document, selectedDataTypeObject.primaryKey)}</span>
-                                  <Button
-                                    variant="ghost"
-                                    size="icon"
-                                    className="h-6 w-6 hover:bg-green-50"
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      copyToClipboard(getPrimaryKeyValue(document, selectedDataTypeObject.primaryKey), toast, e);
-                                    }}
-                                    title="Kopyala"
-                                  >
-                                    <Copy className="h-3.5 w-3.5" />
-                                  </Button>
-                                </div>
+                                <span className={cn(
+                                  "px-2 py-1 rounded-full text-xs font-medium",
+                                  document.lastDocumentStatus === 'Completed' && "bg-green-100 text-green-800",
+                                  document.lastDocumentStatus === 'Error' && "bg-red-100 text-red-800",
+                                  document.lastDocumentStatus === 'Processing' && "bg-blue-100 text-blue-800",
+                                  document.lastDocumentStatus === 'Created' && "bg-yellow-100 text-yellow-800",
+                                  document.lastDocumentStatus === 'Ignore' && "bg-gray-100 text-gray-800"
+                                )}>
+                                  {document.lastDocumentStatus}
+                                </span>
                               </TableCell>
-                            )}
-                            <TableCell>
-                              <span className={cn(
-                                "px-2 py-1 rounded-full text-xs font-medium",
-                                document.lastDocumentStatus === 'Completed' && "bg-green-100 text-green-800",
-                                document.lastDocumentStatus === 'Error' && "bg-red-100 text-red-800",
-                                document.lastDocumentStatus === 'Processing' && "bg-blue-100 text-blue-800",
-                                document.lastDocumentStatus === 'Created' && "bg-yellow-100 text-yellow-800",
-                                document.lastDocumentStatus === 'Ignore' && "bg-gray-100 text-gray-800"
-                              )}>
-                                {document.lastDocumentStatus}
-                              </span>
-                            </TableCell>
-                            <TableCell>{document.referenceCode}</TableCell>
-                            <TableCell>{formatDateSimple(document.createdAt)}</TableCell>
-                            <TableCell>{getRemainingTime(document.expiresAt)}</TableCell>
-                            <TableCell>
-                              <Button 
-                                variant="outline" 
-                                size="sm"
-                                onClick={() => handleViewDocument(document)}
-                              >
-                                Detaylar
-                              </Button>
-                            </TableCell>
-                          </TableRow>
-                        ))
+                              <TableCell>{document.referenceCode}</TableCell>
+                              <TableCell>{formatDateSimple(document.createdAt)}</TableCell>
+                              <TableCell>{getRemainingTime(document.expiresAt)}</TableCell>
+                              <TableCell>
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() => handleViewDocument(document)} 
+                                >
+                                  Detaylar
+                                </Button>
+                              </TableCell>
+                            </TableRow>
+                          ))
+                        )
                       )}
                     </TableBody>
                   </Table>
                 </div>
-                
+
                 {/* Pagination controls */}
                 <div className="mt-4 flex items-center justify-between">
                   <div className="text-sm text-muted-foreground">
-                    Toplam {filteredDocuments.length} kayıt
+                    Toplam {Object.values(filteredDocuments).flat().length} kayıt
                   </div>
-                  <Pagination 
+                  <Pagination
                     currentPage={currentPage}
                     totalPages={totalPages}
                     onPageChange={handlePageChange}
@@ -1161,7 +1246,7 @@ export function AnalyseTab() {
               Döküman detaylarını inceleyebilirsiniz.
             </DialogDescription>
           </DialogHeader>
-          
+
           {selectedDocument && (
             <Tabs defaultValue="workflow" className="flex-1 overflow-hidden flex flex-col">
               <TabsList className="grid w-full grid-cols-2">
