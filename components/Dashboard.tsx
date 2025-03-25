@@ -16,10 +16,8 @@ import { SystemLogs } from './dashboard/system-logs';
 import { AnalyseTab } from './dashboard/analyse-tab';
 
 export default function Dashboard({ metrics, error, logs, logsError }: { metrics: SystemMetrics | null, error: string | null, logs: SystemLog[] | null, logsError: string | null }) {
-  const [restaurants, setRestaurants] = useState<Restaurant[]>([]);
-  const [recentSyncs, setRecentSyncs] = useState<SyncData[]>([]);
-  const [databases, setDatabases] = useState<DatabaseConnection[]>([]);
-  const [auditLogs, setAuditLogs] = useState<AuditLog[]>([]);
+  const [activeRestaurantCount, setActiveRestaurantCount] = useState(0);
+  const [passiveRestaurantCount, setPassiveRestaurantCount] = useState(0);
 
   // SignalR bağlantı durumunu kontrol edelim
   useEffect(() => {
@@ -32,31 +30,7 @@ export default function Dashboard({ metrics, error, logs, logsError }: { metrics
   useEffect(() => {
   }, [metrics]);
 
-  useEffect(() => {
-    setRestaurants(generateRestaurants(500));
-    setDatabases(generateDatabaseConnections());
-    setAuditLogs(generateAuditLogs(100));
 
-    const interval = setInterval(() => {
-      setDatabases(generateDatabaseConnections());
-      setRestaurants(prev =>
-        prev.map(rest => ({
-          ...rest,
-          lastSync: new Date(),
-          status: Math.random() > 0.95 ? 'error' : 'active',
-          totalDocuments: Math.floor(Math.random() * 50000),
-          dataTransferred: Math.random() * 1024,
-        }))
-      );
-      setRecentSyncs(prev => [
-        generateSyncData(`rest_${Math.floor(Math.random() * 500) + 1}`),
-        ...prev.slice(0, 49),
-      ]);
-      setAuditLogs(prev => [generateAuditLogs(1)[0], ...prev.slice(0, 99)]);
-    }, 2000);
-
-    return () => clearInterval(interval);
-  }, []);
 
 
 
@@ -94,12 +68,10 @@ export default function Dashboard({ metrics, error, logs, logsError }: { metrics
                   <div className="space-y-6">
                     <OverviewCards
                       metrics={metrics}
-                      lastSyncDate={recentSyncs[0]?.timestamp.toLocaleTimeString()}
-                      totalRestaurantCount={restaurants.length}
-                      activeRestaurantCount={restaurants.filter(r => r.status === 'active').length}
-                      passiveRestaurantCount={restaurants.filter(r => r.status === 'idle').length}
+                      activeRestaurantCount={activeRestaurantCount}
+                      passiveRestaurantCount={passiveRestaurantCount}
                     />
-                    <CompanyCards />
+                    <CompanyCards setActiveRestaurantCount={setActiveRestaurantCount} setPassiveRestaurantCount={setPassiveRestaurantCount} />
                   </div>
                 </TabsContent>
                 <TabsContent value="branches" className="h-full overflow-auto m-0">

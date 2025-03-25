@@ -7,7 +7,7 @@ import CompanyCard from './company-cards/company-card';
 import useMetricsData from '@/hooks/use-metrics';
 
 
-export function CompanyCards() {
+export function CompanyCards({ setActiveRestaurantCount, setPassiveRestaurantCount }: { setActiveRestaurantCount: (count: number) => void, setPassiveRestaurantCount: (count: number) => void }) {
   const {
     searchQuery,
     setSearchQuery,
@@ -18,6 +18,8 @@ export function CompanyCards() {
     fetchTenantMetrics
   } = useMetricsData();
 
+  setActiveRestaurantCount(tenants.reduce((accumulator, currentValue) => accumulator + currentValue.activeBranches, 0));
+  setPassiveRestaurantCount(tenants.reduce((accumulator, currentValue) => accumulator + currentValue.passiveBranches, 0));
   return (
     <div className="space-y-4">
       <TotalCard
