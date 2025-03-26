@@ -2,11 +2,11 @@
 
 import { BranchData } from '@/lib/types';
 import { DataTable } from '@/components/ui/data-table';
-import { ColumnDef, useReactTable, getCoreRowModel, getFilteredRowModel, getPaginationRowModel, getSortedRowModel } from '@tanstack/react-table';
+import { ColumnDef, useReactTable, getCoreRowModel, getFilteredRowModel, getPaginationRowModel, getSortedRowModel, PaginationState } from '@tanstack/react-table';
 import { ArrowUpDown, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import useApi from '@/hooks/use-api';
 import { toast } from '@/components/ui/use-toast';
 
@@ -50,206 +50,15 @@ interface BranchApiResponse {
   totalSize: string;
 }
 
-const columns: ColumnDef<ExtendedBranchData>[] = [
-  {
-    accessorKey: 'tenantId',
-    header: ({ column }) => {
-      return (
-        <div className="text-left w-full">
-          <Button
-            variant="ghost"
-            onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
-            className="!justify-start p-0 w-full"
-          >
-            Firma Kısa Kod
-            <ArrowUpDown className="ml-2 h-4 w-4" />
-          </Button>
-        </div>
-      );
-    },
-    cell: ({ row }) => {
-      return row.getValue('tenantId');
-    },
-  },
-  {
-    accessorKey: 'branchId',
-    header: ({ column }) => {
-      return (
-        <div className="text-left w-full">
-          <Button
-            variant="ghost"
-            onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
-            className="!justify-start p-0 w-full"
-          >
-            Şube ID
-            <ArrowUpDown className="ml-2 h-4 w-4" />
-          </Button>
-        </div>
-      );
-    },
-    cell: ({ row }) => {
-      return String(row.getValue('branchId'));
-    },
-    filterFn: (row, id, filterValue) => {
-      const value = String(row.getValue(id));
-      return value.includes(String(filterValue));
-    },
-  },
-  {
-    accessorKey: 'isActive',
-    header: 'Durum',
-    cell: ({ row }) => {
-      const isActive = row.getValue('isActive') as boolean;
-      return (
-        <div className="flex items-center">
-          <div
-            className={`w-2 h-2 rounded-full mr-2 ${isActive ? 'bg-green-500' : 'bg-red-500'
-              }`}
-          />
-          {isActive ? 'Aktif' : 'Pasif'}
-        </div>
-      );
-    },
-  },
-  {
-    accessorKey: 'totalPending',
-    header: ({ column }) => {
-      return (
-        <div className="text-left w-full">
-          <Button
-            variant="ghost"
-            onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
-            className="!justify-start p-0 w-full"
-          >
-            Kuyrukta
-            <ArrowUpDown className="ml-2 h-4 w-4" />
-          </Button>
-        </div>
-      );
-    },
-    cell: ({ row }) => {
-      const totalPending = row.getValue('totalPending') as { count: number; size: number };
-      const sizeCreated = row.original.sizeCreated as string;
-      return totalPending ? `${totalPending.count.toLocaleString()} (${sizeCreated || '0B'})` : '0 (0B)';
-    },
-  },
-  {
-    accessorKey: 'totalSuccess',
-    header: ({ column }) => {
-      return (
-        <div className="text-left w-full">
-          <Button
-            variant="ghost"
-            onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
-            className="!justify-start p-0 w-full"
-          >
-            Başarılı
-            <ArrowUpDown className="ml-2 h-4 w-4" />
-          </Button>
-        </div>
-      );
-    },
-    cell: ({ row }) => {
-      const totalSuccess = row.getValue('totalSuccess') as { count: number; size: number };
-      const sizeCompleted = row.original.sizeCompleted as string;
-      return totalSuccess ? `${totalSuccess.count.toLocaleString()} (${sizeCompleted || '0B'})` : '0 (0B)';
-    },
-  },
-  {
-    accessorKey: 'totalError',
-    header: ({ column }) => {
-      return (
-        <div className="text-left w-full">
-          <Button
-            variant="ghost"
-            onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
-            className="!justify-start p-0 w-full"
-          >
-            Hatalı
-            <ArrowUpDown className="ml-2 h-4 w-4" />
-          </Button>
-        </div>
-      );
-    },
-    cell: ({ row }) => {
-      const totalError = row.getValue('totalError') as { count: number; size: number };
-      const sizeError = row.original.sizeError as string;
-      return totalError ? `${totalError.count.toLocaleString()} (${sizeError || '0B'})` : '0 (0B)';
-    },
-  },
-  {
-    accessorKey: 'totalProcessing',
-    header: ({ column }) => {
-      return (
-        <div className="text-left w-full">
-          <Button
-            variant="ghost"
-            onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
-            className="!justify-start p-0 w-full"
-          >
-            İşleniyor
-            <ArrowUpDown className="ml-2 h-4 w-4" />
-          </Button>
-        </div>
-      );
-    },
-    cell: ({ row }) => {
-      const totalProcessing = row.getValue('totalProcessing') as { count: number; size: number };
-      const sizeProcessing = row.original.sizeProcessing as string;
-      return totalProcessing ? `${totalProcessing.count.toLocaleString()} (${sizeProcessing || '0B'})` : '0 (0B)';
-    },
-  },
-  {
-    accessorKey: 'totalIgnore',
-    header: ({ column }) => {
-      return (
-        <div className="text-left w-full">
-          <Button
-            variant="ghost"
-            onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
-            className="!justify-start p-0 w-full"
-          >
-            Yoksayılan
-            <ArrowUpDown className="ml-2 h-4 w-4" />
-          </Button>
-        </div>
-      );
-    },
-    cell: ({ row }) => {
-      const totalIgnore = row.getValue('totalIgnore') as { count: number; size: number };
-      const sizeIgnore = row.original.sizeIgnore as string;
-      return totalIgnore ? `${totalIgnore.count.toLocaleString()} (${sizeIgnore || '0B'})` : '0 (0B)';
-    },
-  },
-  {
-    accessorKey: 'totalCount',
-    header: ({ column }) => {
-      return (
-        <div className="text-left w-full">
-          <Button
-            variant="ghost"
-            onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
-            className="!justify-start p-0 w-full"
-          >
-            Toplam
-            <ArrowUpDown className="ml-2 h-4 w-4" />
-          </Button>
-        </div>
-      );
-    },
-    cell: ({ row }) => {
-      const totalCount = row.getValue('totalCount') as number;
-      const totalSize = row.original.totalSize as string;
-      return `${totalCount?.toLocaleString() || '0'} (${totalSize || '0B'})`;
-    },
-  },
-];
-
 export function RestaurantsTable() {
   const [branchData, setBranchData] = useState<ExtendedBranchData[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [filterValue, setFilterValue] = useState('');
   const [activeFilter, setActiveFilter] = useState<'all' | 'active' | 'inactive'>('all');
+  const [pagination, setPagination] = useState<PaginationState>({
+    pageIndex: 0,
+    pageSize: 10,
+  });
   const api = useApi();
 
   useEffect(() => {
@@ -347,22 +156,228 @@ export function RestaurantsTable() {
     fetchBranchData();
   }, []);
 
+  // Reset pagination when filters change
+  useEffect(() => {
+    setPagination(prev => ({
+      ...prev,
+      pageIndex: 0,
+    }));
+  }, [activeFilter, filterValue]);
+
   // Apply filters based on search input and active filter
-  const filteredData = branchData.filter(branch => {
-    // Apply search filter
-    const searchMatch = 
-      filterValue === '' || 
-      branch.tenantId.toLowerCase().includes(filterValue.toLowerCase()) ||
-      branch.branchId.toString().includes(filterValue);
-    
-    // Apply active/inactive filter
-    const statusMatch = 
-      activeFilter === 'all' || 
-      (activeFilter === 'active' && branch.isActive) || 
-      (activeFilter === 'inactive' && !branch.isActive);
-    
-    return searchMatch && statusMatch;
-  });
+  const filteredData = useMemo(() => {
+    return branchData.filter(branch => {
+      // Apply search filter
+      const searchMatch = 
+        filterValue === '' || 
+        branch.tenantId.toLowerCase().includes(filterValue.toLowerCase()) ||
+        branch.branchId.toString().includes(filterValue);
+      
+      // Apply active/inactive filter
+      const statusMatch = 
+        activeFilter === 'all' || 
+        (activeFilter === 'active' && branch.isActive) || 
+        (activeFilter === 'inactive' && !branch.isActive);
+      
+      return searchMatch && statusMatch;
+    });
+  }, [branchData, filterValue, activeFilter]);
+
+  // Define columns
+  const columns: ColumnDef<ExtendedBranchData>[] = useMemo(() => [
+    {
+      accessorKey: 'tenantId',
+      header: ({ column }) => {
+        return (
+          <div className="text-left w-full">
+            <Button
+              variant="ghost"
+              onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
+              className="!justify-start p-0 w-full"
+            >
+              Firma Kısa Kod
+              <ArrowUpDown className="ml-2 h-4 w-4" />
+            </Button>
+          </div>
+        );
+      },
+      cell: ({ row }) => {
+        return row.getValue('tenantId');
+      },
+    },
+    {
+      accessorKey: 'branchId',
+      header: ({ column }) => {
+        return (
+          <div className="text-left w-full">
+            <Button
+              variant="ghost"
+              onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
+              className="!justify-start p-0 w-full"
+            >
+              Şube ID
+              <ArrowUpDown className="ml-2 h-4 w-4" />
+            </Button>
+          </div>
+        );
+      },
+      cell: ({ row }) => {
+        return String(row.getValue('branchId'));
+      },
+      filterFn: (row, id, filterValue) => {
+        const value = String(row.getValue(id));
+        return value.includes(String(filterValue));
+      },
+    },
+    {
+      accessorKey: 'isActive',
+      header: 'Durum',
+      cell: ({ row }) => {
+        const isActive = row.getValue('isActive') as boolean;
+        return (
+          <div className="flex items-center">
+            <div
+              className={`w-2 h-2 rounded-full mr-2 ${isActive ? 'bg-green-500' : 'bg-red-500'
+                }`}
+            />
+            {isActive ? 'Aktif' : 'Pasif'}
+          </div>
+        );
+      },
+    },
+    {
+      accessorKey: 'totalPending',
+      header: ({ column }) => {
+        return (
+          <div className="text-left w-full">
+            <Button
+              variant="ghost"
+              onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
+              className="!justify-start p-0 w-full"
+            >
+              Kuyrukta
+              <ArrowUpDown className="ml-2 h-4 w-4" />
+            </Button>
+          </div>
+        );
+      },
+      cell: ({ row }) => {
+        const totalPending = row.getValue('totalPending') as { count: number; size: number };
+        const sizeCreated = row.original.sizeCreated as string;
+        return totalPending ? `${totalPending.count.toLocaleString()} (${sizeCreated || '0B'})` : '0 (0B)';
+      },
+    },
+    {
+      accessorKey: 'totalSuccess',
+      header: ({ column }) => {
+        return (
+          <div className="text-left w-full">
+            <Button
+              variant="ghost"
+              onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
+              className="!justify-start p-0 w-full"
+            >
+              Başarılı
+              <ArrowUpDown className="ml-2 h-4 w-4" />
+            </Button>
+          </div>
+        );
+      },
+      cell: ({ row }) => {
+        const totalSuccess = row.getValue('totalSuccess') as { count: number; size: number };
+        const sizeCompleted = row.original.sizeCompleted as string;
+        return totalSuccess ? `${totalSuccess.count.toLocaleString()} (${sizeCompleted || '0B'})` : '0 (0B)';
+      },
+    },
+    {
+      accessorKey: 'totalError',
+      header: ({ column }) => {
+        return (
+          <div className="text-left w-full">
+            <Button
+              variant="ghost"
+              onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
+              className="!justify-start p-0 w-full"
+            >
+              Hatalı
+              <ArrowUpDown className="ml-2 h-4 w-4" />
+            </Button>
+          </div>
+        );
+      },
+      cell: ({ row }) => {
+        const totalError = row.getValue('totalError') as { count: number; size: number };
+        const sizeError = row.original.sizeError as string;
+        return totalError ? `${totalError.count.toLocaleString()} (${sizeError || '0B'})` : '0 (0B)';
+      },
+    },
+    {
+      accessorKey: 'totalProcessing',
+      header: ({ column }) => {
+        return (
+          <div className="text-left w-full">
+            <Button
+              variant="ghost"
+              onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
+              className="!justify-start p-0 w-full"
+            >
+              İşleniyor
+              <ArrowUpDown className="ml-2 h-4 w-4" />
+            </Button>
+          </div>
+        );
+      },
+      cell: ({ row }) => {
+        const totalProcessing = row.getValue('totalProcessing') as { count: number; size: number };
+        const sizeProcessing = row.original.sizeProcessing as string;
+        return totalProcessing ? `${totalProcessing.count.toLocaleString()} (${sizeProcessing || '0B'})` : '0 (0B)';
+      },
+    },
+    {
+      accessorKey: 'totalIgnore',
+      header: ({ column }) => {
+        return (
+          <div className="text-left w-full">
+            <Button
+              variant="ghost"
+              onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
+              className="!justify-start p-0 w-full"
+            >
+              Yoksayılan
+              <ArrowUpDown className="ml-2 h-4 w-4" />
+            </Button>
+          </div>
+        );
+      },
+      cell: ({ row }) => {
+        const totalIgnore = row.getValue('totalIgnore') as { count: number; size: number };
+        const sizeIgnore = row.original.sizeIgnore as string;
+        return totalIgnore ? `${totalIgnore.count.toLocaleString()} (${sizeIgnore || '0B'})` : '0 (0B)';
+      },
+    },
+    {
+      accessorKey: 'totalCount',
+      header: ({ column }) => {
+        return (
+          <div className="text-left w-full">
+            <Button
+              variant="ghost"
+              onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
+              className="!justify-start p-0 w-full"
+            >
+              Toplam
+              <ArrowUpDown className="ml-2 h-4 w-4" />
+            </Button>
+          </div>
+        );
+      },
+      cell: ({ row }) => {
+        const totalCount = row.getValue('totalCount') as number;
+        const totalSize = row.original.totalSize as string;
+        return `${totalCount?.toLocaleString() || '0'} (${totalSize || '0B'})`;
+      },
+    },
+  ], []);
 
   const table = useReactTable({
     columns,
@@ -371,12 +386,11 @@ export function RestaurantsTable() {
     getFilteredRowModel: getFilteredRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
     getSortedRowModel: getSortedRowModel(),
+    onPaginationChange: setPagination,
     state: {
-      pagination: {
-        pageIndex: 0,
-        pageSize: 10,
-      },
+      pagination,
     },
+    manualPagination: false,
   });
 
   return (
@@ -425,11 +439,21 @@ export function RestaurantsTable() {
           <span className="ml-2">Veriler yükleniyor...</span>
         </div>
       ) : (
-        <DataTable
-          columns={columns}
-          data={filteredData}
-          table={table}
-        />
+        <>
+          <div className="rounded-md border glass">
+            <DataTable
+              columns={columns}
+              data={filteredData}
+              table={table}
+            />
+          </div>
+          <div className="mt-4 text-sm text-muted-foreground">
+            Toplam {filteredData.length} şube bulundu
+            {activeFilter !== 'all' && (
+              <span> ({activeFilter === 'active' ? 'Aktif' : 'Pasif'} şubeler)</span>
+            )}
+          </div>
+        </>
       )}
     </div>
   );
