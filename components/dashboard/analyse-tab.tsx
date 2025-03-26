@@ -450,8 +450,8 @@ export function AnalyseTab() {
 
         // Fetch other filter options (except data types which depend on tenant)
         const [statuses, dateRanges] = await Promise.all([
-          getStatusOptions(),
-          getDateRangeOptions()
+          getStatusOptions(), // 20 sn
+          getDateRangeOptions()  // 25sn
         ]);
 
         setStatusOptions(statuses as StatusOption[]);

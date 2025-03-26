@@ -2,18 +2,13 @@
 
 import React, { useEffect, useState } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { generateRestaurants, generateSyncData, generateDatabaseConnections, generateAuditLogs } from '@/lib/mock-data';
-import { Restaurant, SyncData, DatabaseConnection, AuditLog, SystemMetrics, SystemLog } from '@/lib/types';
+import { SystemMetrics, SystemLog } from '@/lib/types';
 import { OverviewCards } from './dashboard/overview-cards';
-import { RestaurantsTable } from './tables/restaurants-table';
-import { DatabasesTab } from './dashboard/databases-tab';
-import { SyncTab } from './dashboard/sync-tab';
-import { AuditTab } from './dashboard/audit-tab';
 import { SettingsTab } from './dashboard/settings-tab';
 import { QueriesTab } from './dashboard/queries-tab';
 import { CompanyCards } from "./dashboard/company-cards";
-import { SystemLogs } from './dashboard/system-logs';
 import { AnalyseTab } from './dashboard/analyse-tab';
+import { RestaurantsTable } from './tables/restaurants-table';
 
 export default function Dashboard({ metrics, error, logs, logsError }: { metrics: SystemMetrics | null, error: string | null, logs: SystemLog[] | null, logsError: string | null }) {
   const [activeRestaurantCount, setActiveRestaurantCount] = useState(0);
@@ -29,10 +24,6 @@ export default function Dashboard({ metrics, error, logs, logsError }: { metrics
   // Metrics değişimini izleyelim
   useEffect(() => {
   }, [metrics]);
-
-
-
-
 
   return (
     <div className="h-screen overflow-hidden flex">
@@ -75,7 +66,7 @@ export default function Dashboard({ metrics, error, logs, logsError }: { metrics
                   </div>
                 </TabsContent>
                 <TabsContent value="branches" className="h-full overflow-auto m-0">
-                  {/* <RestaurantsTable /> */}
+                  <RestaurantsTable />
                 </TabsContent>
                 <TabsContent value="analyse" className="h-full overflow-auto m-0">
                   <AnalyseTab />
