@@ -2,60 +2,130 @@
 
 import Dashboard from '@/components/Dashboard';
 import { useSystemMetrics } from '@/hooks/use-signalr';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import useApi from '@/hooks/use-api';
 import { SystemLog } from '@/lib/types';
 
 // Response type for the logs endpoint
 interface LogsResponse {
-  Logs: string[];
+  logs: string[];
 }
 
 export default function Home() {
   const { metrics: systemMetrics, error: systemError } = useSystemMetrics();
   const [logs, setLogs] = useState<SystemLog[] | null>(null);
   const [logsError, setLogsError] = useState<string | null>(null);
+  const [isPollingEnabled, setIsPollingEnabled] = useState(true);
+  const intervalIdRef = useRef<NodeJS.Timeout | null>(null);
   const api = useApi();
 
-  // Fetch logs from the API endpoint every 35 seconds
-  useEffect(() => {
-    const fetchLogs = async () => {
-      try {
-        const response = await api.get<LogsResponse>('/logs/errors');
-        
-        if (!response.data || !response.data.Logs) {
-          setLogsError('Invalid log data format received');
-          return;
-        }
-        
-        // Transform string logs into SystemLog objects
-        const formattedLogs: SystemLog[] = response.data.Logs
-          .filter(log => log) // Filter out any null/undefined logs
-          .map((logMessage, index) => ({
-            id: `error-log-${index}-${Date.now()}`, // Create a unique ID
-            message: logMessage, // Keep the message as a string
-            timestamp: new Date(), // Use current time as a Date object
-            level: 'error', // All logs from /logs/errors are error level
-          }));
-        
-        setLogs(formattedLogs);
-        setLogsError(null);
-      } catch (error) {
-        console.error('Error fetching logs:', error);
-        setLogsError('Failed to fetch system logs');
-        setLogs([]); // Set empty array instead of null to avoid UI errors
+  // Function to parse log level from log message
+  const parseLogLevel = (logMessage: string): string => {
+    // Extract log level from format like "[INF]", "[ERR]", etc.
+    const match = logMessage.match(/\[(INF|ERR|WRN|DBG|FTL)\]/i);
+    if (match) {
+      const level = match[1].toLowerCase();
+      switch (level) {
+        case 'inf': return 'info';
+        case 'err': return 'error';
+        case 'wrn': return 'warning';
+        case 'dbg': return 'debug';
+        case 'ftl': return 'fatal';
+        default: return 'info';
       }
-    };
+    }
+    return 'info'; // Default to info if no level found
+  };
 
+  // Function to parse timestamp from log message
+  const parseTimestamp = (logMessage: string): Date => {
+    // Extract timestamp from format like "2025-03-26 13:32:08.186 +03:00"
+    const match = logMessage.match(/^(\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}\.\d{3}\s[+-]\d{2}:\d{2})/);
+    if (match) {
+      try {
+        return new Date(match[1]);
+      } catch (e) {
+        console.error('Error parsing timestamp:', e);
+      }
+    }
+    return new Date(); // Default to current time if parsing fails
+  };
+
+  // Function to fetch logs
+  const fetchLogs = async () => {
+    try {
+      console.log('Fetching logs from /logs/errors');
+      const response = await api.get<LogsResponse>('/logs/errors');
+      
+      if (!response.data || !response.data.logs) {
+        setLogsError('Invalid log data format received');
+        return;
+      }
+      
+      // Transform string logs into SystemLog objects
+      const formattedLogs: SystemLog[] = response.data.logs
+        .filter(log => log) // Filter out any null/undefined logs
+        .map((logMessage, index) => {
+          const timestamp = parseTimestamp(logMessage);
+          const level = parseLogLevel(logMessage);
+          
+          return {
+            id: `log-${index}-${Date.now()}`, // Create a unique ID
+            message: logMessage, // Keep the full message
+            timestamp: timestamp,
+            level: level,
+          };
+        });
+      
+      setLogs(formattedLogs);
+      setLogsError(null);
+    } catch (error) {
+      console.error('Error fetching logs:', error);
+      setLogsError('Failed to fetch system logs');
+      setLogs([]); // Set empty array instead of null to avoid UI errors
+    }
+  };
+
+  // Set up polling effect
+  useEffect(() => {
     // Initial fetch
     fetchLogs();
-
-    // Set up polling interval (35 seconds)
-    const intervalId = setInterval(fetchLogs, 35000);
-
+    
+    // Set up polling interval only if enabled
+    if (isPollingEnabled) {
+      console.log('Setting up log polling interval (35 seconds)');
+      intervalIdRef.current = setInterval(fetchLogs, 35000);
+    }
+    
     // Clean up on unmount
-    return () => clearInterval(intervalId);
-  }, [api]);
+    return () => {
+      if (intervalIdRef.current) {
+        console.log('Clearing log polling interval');
+        clearInterval(intervalIdRef.current);
+        intervalIdRef.current = null;
+      }
+    };
+  }, [isPollingEnabled]); // Only re-run if polling state changes
 
-  return <Dashboard metrics={systemMetrics} error={systemError} logs={logs} logsError={logsError} />;
+  return (
+    <>
+      <Dashboard 
+        metrics={systemMetrics} 
+        error={systemError} 
+        logs={logs} 
+        logsError={logsError} 
+      />
+      {/* Hidden control for debugging - remove in production */}
+      <div style={{ position: 'fixed', bottom: 0, right: 0, padding: '5px', background: '#f0f0f0', fontSize: '10px', opacity: 0.7 }}>
+        <label>
+          <input 
+            type="checkbox" 
+            checked={isPollingEnabled} 
+            onChange={() => setIsPollingEnabled(!isPollingEnabled)} 
+          />
+          Log Polling ({isPollingEnabled ? 'Active' : 'Paused'})
+        </label>
+      </div>
+    </>
+  );
 }
