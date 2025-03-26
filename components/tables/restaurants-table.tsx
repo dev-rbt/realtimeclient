@@ -35,6 +35,7 @@ interface BranchStats {
   SizeCreated: string;
   SizeError: string;
   SizeIgnore: string;
+  TotalSize: string;
 }
 
 interface BranchApiResponse {
@@ -80,30 +81,6 @@ export function RestaurantsTable() {
               branchStats.TotalIgnore + 
               branchStats.TotalCreated;
             
-            // For total size, we'll need to parse and add the sizes
-            // Since the size strings are formatted like "2,39MB", we'll use a simple approach
-            // that just shows the sum of counts and the largest size unit as an approximation
-            const sizeValues = [
-              branchStats.SizeCompleted,
-              branchStats.SizeError,
-              branchStats.SizeProcessing,
-              branchStats.SizeIgnore,
-              branchStats.SizeCreated
-            ].filter(size => size && size !== '0' && size !== '0B');
-            
-            // Find the largest size unit as a simple approximation
-            let totalSize = '0B';
-            if (sizeValues.length > 0) {
-              // Sort by size unit priority (MB > KB > B)
-              const sortedSizes = [...sizeValues].sort((a, b) => {
-                const unitA = a.includes('MB') ? 3 : a.includes('KB') ? 2 : 1;
-                const unitB = b.includes('MB') ? 3 : b.includes('KB') ? 2 : 1;
-                return unitB - unitA;
-              });
-              
-              totalSize = sortedSizes[0]; // Use the largest size as an approximation
-            }
-            
             transformedData.push({
               tenantId,
               branchId: parseInt(branchId),
@@ -114,7 +91,7 @@ export function RestaurantsTable() {
               sizeError: branchStats.SizeError,
               sizeIgnore: branchStats.SizeIgnore,
               totalCount: totalCount,
-              totalSize: totalSize,
+              totalSize: branchStats.TotalSize || '0B',
               totalSuccess: {
                 count: branchStats.TotalCompleted,
                 size: 0 // Size is now handled separately
