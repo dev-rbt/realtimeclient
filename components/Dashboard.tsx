@@ -9,6 +9,7 @@ import { QueriesTab } from './dashboard/queries-tab';
 import { CompanyCards } from "./dashboard/company-cards";
 import { AnalyseTab } from './dashboard/analyse-tab';
 import { RestaurantsTable } from './tables/restaurants-table';
+import { SystemLogs } from './dashboard/system-logs';
 
 export default function Dashboard({ metrics, error, logs, logsError }: { metrics: SystemMetrics | null, error: string | null, logs: SystemLog[] | null, logsError: string | null }) {
   const [activeRestaurantCount, setActiveRestaurantCount] = useState(0);
@@ -90,9 +91,9 @@ export default function Dashboard({ metrics, error, logs, logsError }: { metrics
       </div>
 
       {/* System Logs - Right Side */}
-      {/* <div className="w-[350px] bg-card/50 backdrop-blur-sm shadow-lg overflow-hidden flex flex-col h-screen border-l">
+      <div className="w-[350px] bg-card/50 backdrop-blur-sm shadow-lg overflow-hidden flex flex-col h-screen border-l">
         <SystemLogs logs={logs} logsError={logsError} />
-      </div> */}
+      </div>
     </div>
   );
 }
