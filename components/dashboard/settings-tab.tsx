@@ -100,10 +100,32 @@ export function SettingsTab() {
         sameSourceAndTarget: connection.sameSourceAndTarget
       });
 
+      // If sameSourceAndTarget is false, also test the target connection
+      if (!connection.sameSourceAndTarget && connection.targetConnection) {
+        await api.post('/connection/test', {
+          name: connection.targetConnection.name,
+          host: connection.targetConnection.host,
+          port: connection.targetConnection.port,
+          dbName: connection.targetConnection.dbName,
+          userName: connection.targetConnection.userName,
+          password: connection.targetConnection.password,
+          trustServerCertificate: connection.targetConnection.trustServerCertificate,
+          encrypt: connection.targetConnection.encrypt,
+          connectTimeout: connection.targetConnection.connectTimeout,
+          tenantId: connection.tenantId
+        });
+      }
+
       setTestResult({
         success: true,
         message: "Bağlantı başarılı! Veritabanına erişilebiliyor."
       });
+      
+      // Close the test dialog after successful test
+      setTimeout(() => {
+        setTestDialogOpen(false);
+        setConnectionToTest(null);
+      }, 1500);
     } catch (error: any) {
       setTestResult({
         success: false,

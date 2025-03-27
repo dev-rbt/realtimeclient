@@ -8,6 +8,7 @@ import { useState, useEffect } from 'react';
 import useApi from '@/hooks/use-api';
 import { SqlConnection, TestResult, ConnectionTestResult, UpdateConnectionModel, CreateConnectionModel } from '@/components/dashboard/settings/types';
 import { useConnections } from '@/hooks/useConnections';
+import { useConnectionsStore } from '@/store/useConnectionsStore';
 
 interface ConnectionFormProps {
   connection: SqlConnection;
@@ -36,6 +37,7 @@ export default function ConnectionForm({ connection, onSave, onCancel }: Connect
   const { toast } = useToast();
   const api = useApi();
   const { connections } = useConnections();
+  const { fetchConnections } = useConnectionsStore();
 
   useEffect(() => {
     setFormData(connection);
@@ -139,32 +141,31 @@ export default function ConnectionForm({ connection, onSave, onCancel }: Connect
         source: sourceResult
       };
 
-      if (!formData.sameSourceAndTarget) {
-        try {
-          const targetTestData = {
-            name: targetFormData.name,
-            host: targetFormData.host,
-            port: targetFormData.port,
-            dbName: targetFormData.dbName,
-            userName: targetFormData.userName,
-            password: targetFormData.password,
-            trustServerCertificate: targetFormData.trustServerCertificate,
-            encrypt: targetFormData.encrypt,
-            connectTimeout: targetFormData.connectTimeout,
-            tenantId: targetFormData.tenantId
-          };
-          
-          await api.post('/connection/test', targetTestData);
-          results.target = {
-            success: true,
-            message: "Hedef bağlantı başarılı! Veritabanına erişilebiliyor."
-          };
-        } catch (error: any) {
-          results.target = {
-            success: false,
-            message: error.response?.data?.message || "Hedef bağlantı testi başarısız! Veritabanına erişilemiyor."
-          };
-        }
+      // Always test target connection regardless of sameSourceAndTarget setting
+      try {
+        const targetTestData = {
+          name: targetFormData.name,
+          host: targetFormData.host,
+          port: targetFormData.port,
+          dbName: targetFormData.dbName,
+          userName: targetFormData.userName,
+          password: targetFormData.password,
+          trustServerCertificate: targetFormData.trustServerCertificate,
+          encrypt: targetFormData.encrypt,
+          connectTimeout: targetFormData.connectTimeout,
+          tenantId: targetFormData.tenantId
+        };
+        
+        await api.post('/connection/test', targetTestData);
+        results.target = {
+          success: true,
+          message: "Hedef bağlantı başarılı! Veritabanına erişilebiliyor."
+        };
+      } catch (error: any) {
+        results.target = {
+          success: false,
+          message: error.response?.data?.message || "Hedef bağlantı testi başarısız! Veritabanına erişilemiyor."
+        };
       }
 
       return results;
@@ -191,28 +192,29 @@ export default function ConnectionForm({ connection, onSave, onCancel }: Connect
       const results = await testConnection();
       
       if (!results) {
-        toast({
-          title: "Hata",
-          description: "Bağlantı testi yapılamadı.",
-          variant: "destructive"
-        });
+        setIsSaving(false);
         return;
       }
-
-      setTestResults(results);
-
-      let allSuccess = results.source.success;
       
-      if (!formData.sameSourceAndTarget) {
-        allSuccess = allSuccess && (results.target?.success || false);
-      }
-      
-      if (!allSuccess) {
+      // Check if source connection test was successful
+      if (!results.source.success) {
         toast({
           title: "Bağlantı Hatası",
-          description: "Bağlantı testi başarısız olduğu için kaydetme işlemi iptal edildi.",
+          description: "Kaynak veritabanı bağlantısı başarısız. Lütfen bağlantı bilgilerini kontrol edin.",
           variant: "destructive"
         });
+        setIsSaving(false);
+        return;
+      }
+      
+      // Check if target connection test was successful (if not using same connection)
+      if (!formData.sameSourceAndTarget && results.target && !results.target.success) {
+        toast({
+          title: "Bağlantı Hatası",
+          description: "Hedef veritabanı bağlantısı başarısız. Lütfen bağlantı bilgilerini kontrol edin.",
+          variant: "destructive"
+        });
+        setIsSaving(false);
         return;
       }
 
@@ -230,6 +232,7 @@ export default function ConnectionForm({ connection, onSave, onCancel }: Connect
       };
 
       if (formData.id) {
+        // Update existing connection
         const updateModel: UpdateConnectionModel = {
           id: formData.id,
           name: formData.name,
@@ -247,7 +250,11 @@ export default function ConnectionForm({ connection, onSave, onCancel }: Connect
         };
         
         await onSave(updateModel);
+        
+        // Refresh connections in store after update
+        await fetchConnections();
       } else {
+        // Create new connection
         const createModel: CreateConnectionModel = {
           name: formData.name,
           host: formData.host,
@@ -264,6 +271,9 @@ export default function ConnectionForm({ connection, onSave, onCancel }: Connect
         };
         
         await onSave(createModel);
+        
+        // Refresh connections in store after create
+        await fetchConnections();
       }
     } catch (error: any) {
       toast({
