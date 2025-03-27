@@ -6,17 +6,30 @@ import {
 } from "@/components/ui/dialog";
 import { CheckCircleIcon, XCircleIcon } from 'lucide-react';
 import { TestResult } from '@/components/dashboard/settings/types';
+import { useEffect } from 'react';
 
 interface ConnectionTestDialogProps {
   testResult: TestResult | null;
+  isOpen: boolean;
   onOpenChange: (open: boolean) => void;
 }
 
-export default function ConnectionTestDialog({ testResult, onOpenChange }: ConnectionTestDialogProps) {
+export default function ConnectionTestDialog({ testResult, isOpen, onOpenChange }: ConnectionTestDialogProps) {
+  useEffect(() => {
+    // Auto-close dialog after successful test
+    if (testResult?.success) {
+      const timer = setTimeout(() => {
+        onOpenChange(false);
+      }, 1500);
+      
+      return () => clearTimeout(timer);
+    }
+  }, [testResult, onOpenChange]);
+
   if (!testResult) return null;
 
   return (
-    <Dialog open={!!testResult} onOpenChange={onOpenChange}>
+    <Dialog open={isOpen} onOpenChange={onOpenChange}>
       <DialogContent>
         <DialogHeader>
           <DialogTitle>

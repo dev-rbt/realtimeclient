@@ -125,6 +125,7 @@ export function SettingsTab() {
       setTimeout(() => {
         setTestDialogOpen(false);
         setConnectionToTest(null);
+        setTestResult(null);
       }, 1500);
     } catch (error: any) {
       setTestResult({
