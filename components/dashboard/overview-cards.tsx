@@ -25,12 +25,12 @@ export function OverviewCards({
 
   // Metrics card skeleton loader
   const MetricsCardSkeleton = () => (
-    <Card className="p-6 bg-card/50 backdrop-blur-sm col-span-3">
-      <h2 className="text-xl font-semibold mb-6 flex items-center">
-        <Server className="w-5 h-5 mr-2 text-primary" />
+    <Card className="p-4 md:p-6 bg-card/50 backdrop-blur-sm col-span-3">
+      <h2 className="text-lg md:text-xl font-semibold mb-4 md:mb-6 flex items-center">
+        <Server className="w-4 h-4 md:w-5 md:h-5 mr-2 text-primary" />
         Sistem Performansı
       </h2>
-      <div className="space-y-6">
+      <div className="space-y-4 md:space-y-6">
         <div>
           <div className="flex justify-between items-center mb-2">
             <Skeleton className="h-4 w-28" />
@@ -65,25 +65,25 @@ export function OverviewCards({
 
   // Branches card skeleton loader
   const BranchesCardSkeleton = () => (
-    <Card className="p-6 bg-card/50 backdrop-blur-sm hover:bg-card/80 transition-colors">
-      <div className="space-y-6">
-        <div className="flex items-center space-x-4">
-          <div className="p-3.5 bg-blue-500/10 rounded-2xl">
-            <Building2 className="h-9 w-9 text-blue-500" />
+    <Card className="p-3 md:p-6 bg-card/50 backdrop-blur-sm hover:bg-card/80 transition-colors">
+      <div className="space-y-3 md:space-y-6">
+        <div className="flex items-center space-x-2 md:space-x-4">
+          <div className="p-2 md:p-3.5 bg-blue-500/10 rounded-xl md:rounded-2xl">
+            <Building2 className="h-6 w-6 md:h-9 md:w-9 text-blue-500" />
           </div>
           <div>
-            <p className="text-sm font-medium text-muted-foreground">Şubeler</p>
-            <Skeleton className="h-8 w-16 mt-1" />
+            <p className="text-xs md:text-sm font-medium text-muted-foreground">Şubeler</p>
+            <Skeleton className="h-6 md:h-8 w-12 md:w-16 mt-1" />
           </div>
         </div>
-        <div className="grid grid-cols-2 gap-4 pt-2 border-t">
-          <div className="text-center p-2 rounded-lg bg-green-50/30">
-            <p className="text-sm font-medium text-green-600/50">Aktif</p>
-            <Skeleton className="h-6 w-12 mx-auto mt-1" />
+        <div className="grid grid-cols-2 gap-2 md:gap-4 pt-2 border-t">
+          <div className="text-center p-1 md:p-2 rounded-lg bg-green-50/30">
+            <p className="text-xs md:text-sm font-medium text-green-600/50">Aktif</p>
+            <Skeleton className="h-5 md:h-6 w-10 md:w-12 mx-auto mt-1" />
           </div>
-          <div className="text-center p-2 rounded-lg bg-red-50/30">
-            <p className="text-sm font-medium text-red-600/50">Pasif</p>
-            <Skeleton className="h-6 w-12 mx-auto mt-1" />
+          <div className="text-center p-1 md:p-2 rounded-lg bg-red-50/30">
+            <p className="text-xs md:text-sm font-medium text-red-600/50">Pasif</p>
+            <Skeleton className="h-5 md:h-6 w-10 md:w-12 mx-auto mt-1" />
           </div>
         </div>
       </div>
@@ -92,15 +92,15 @@ export function OverviewCards({
 
   // Databases card skeleton loader
   const DatabasesCardSkeleton = () => (
-    <Card className="p-6 bg-card/50 backdrop-blur-sm hover:bg-card/80 transition-colors">
-      <div className="space-y-4">
-        <div className="flex items-center space-x-4">
-          <div className="p-3.5 bg-green-500/10 rounded-2xl">
-            <Database className="h-9 w-9 text-green-500" />
+    <Card className="p-3 md:p-6 bg-card/50 backdrop-blur-sm hover:bg-card/80 transition-colors">
+      <div className="space-y-2 md:space-y-4">
+        <div className="flex items-center space-x-2 md:space-x-4">
+          <div className="p-2 md:p-3.5 bg-green-500/10 rounded-xl md:rounded-2xl">
+            <Database className="h-6 w-6 md:h-9 md:w-9 text-green-500" />
           </div>
           <div>
-            <p className="text-sm font-medium text-muted-foreground">Veritabanları</p>
-            <Skeleton className="h-8 w-16 mt-1" />
+            <p className="text-xs md:text-sm font-medium text-muted-foreground">Veritabanları</p>
+            <Skeleton className="h-6 md:h-8 w-12 md:w-16 mt-1" />
           </div>
         </div>
       </div>
@@ -112,16 +112,16 @@ export function OverviewCards({
   return (
     <div className="grid grid-cols-1 md:grid-cols-6 gap-2">
       {metrics ? (
-        <Card className="p-6 bg-card/50 backdrop-blur-sm col-span-3">
-          <h2 className="text-xl font-semibold mb-6 flex items-center">
-            <Server className="w-5 h-5 mr-2 text-primary" />
+        <Card className="p-4 md:p-6 bg-card/50 backdrop-blur-sm col-span-3">
+          <h2 className="text-lg md:text-xl font-semibold mb-4 md:mb-6 flex items-center">
+            <Server className="w-4 h-4 md:w-5 md:h-5 mr-2 text-primary" />
             Sistem Performansı
           </h2>
-          <div className="space-y-6">
+          <div className="space-y-4 md:space-y-6">
             <div>
               <div className="flex justify-between items-center mb-2">
-                <span className="text-sm text-muted-foreground">CPU Kullanımı</span>
-                <span className="font-bold">{metrics.cpuUsage.toFixed(1)}%</span>
+                <span className="text-xs md:text-sm text-muted-foreground">CPU Kullanımı</span>
+                <span className="text-sm md:text-base font-bold">{metrics.cpuUsage.toFixed(1)}%</span>
               </div>
               <div className="h-2 bg-muted rounded-full overflow-hidden">
                 <div
@@ -132,8 +132,8 @@ export function OverviewCards({
             </div>
             <div>
               <div className="flex justify-between items-center mb-2">
-                <span className="text-sm text-muted-foreground">Bellek Kullanımı</span>
-                <span className="font-bold">{metrics.usedMemory.toFixed(1)} GB / {metrics.totalMemory.toFixed(1)} GB</span>
+                <span className="text-xs md:text-sm text-muted-foreground">Bellek Kullanımı</span>
+                <span className="text-sm md:text-base font-bold">{metrics.usedMemory.toFixed(1)} GB / {metrics.totalMemory.toFixed(1)} GB</span>
               </div>
               <div className="h-2 bg-muted rounded-full overflow-hidden">
                 <div
@@ -144,8 +144,8 @@ export function OverviewCards({
             </div>
             <div>
               <div className="flex justify-between items-center mb-2">
-                <span className="text-sm text-muted-foreground">Disk Kullanımı</span>
-                <span className="font-bold">{metrics.diskUsage.toFixed(1)}%</span>
+                <span className="text-xs md:text-sm text-muted-foreground">Disk Kullanımı</span>
+                <span className="text-sm md:text-base font-bold">{metrics.diskUsage.toFixed(1)}%</span>
               </div>
               <div className="h-2 bg-muted rounded-full overflow-hidden">
                 <div
@@ -156,8 +156,8 @@ export function OverviewCards({
             </div>
             <div>
               <div className="flex justify-between items-center mb-2">
-                <span className="text-sm text-muted-foreground">Ağ Trafiği</span>
-                <span className="font-bold">↓{metrics.networkReceived.toFixed(1)} MB/s ↑{metrics.networkSent.toFixed(1)} MB/s</span>
+                <span className="text-xs md:text-sm text-muted-foreground">Ağ Trafiği</span>
+                <span className="text-sm md:text-base font-bold">↓{metrics.networkReceived.toFixed(1)} MB/s ↑{metrics.networkSent.toFixed(1)} MB/s</span>
               </div>
               <div className="h-2 bg-muted rounded-full overflow-hidden">
                 <div
@@ -173,25 +173,25 @@ export function OverviewCards({
       )}
       <div className="col-span-3 grid grid-cols-2 gap-2">
         {!isLoading ? (
-          <Card className="p-6 bg-card/50 backdrop-blur-sm hover:bg-card/80 transition-colors">
-            <div className="space-y-6">
-              <div className="flex items-center space-x-4">
-                <div className="p-3.5 bg-blue-500/10 rounded-2xl">
-                  <Building2 className="h-9 w-9 text-blue-500" />
+          <Card className="p-3 md:p-6 bg-card/50 backdrop-blur-sm hover:bg-card/80 transition-colors">
+            <div className="space-y-3 md:space-y-6">
+              <div className="flex items-center space-x-2 md:space-x-4">
+                <div className="p-2 md:p-3.5 bg-blue-500/10 rounded-xl md:rounded-2xl">
+                  <Building2 className="h-6 w-6 md:h-9 md:w-9 text-blue-500" />
                 </div>
                 <div>
-                  <p className="text-sm font-medium text-muted-foreground">Şubeler</p>
-                  <h3 className="text-3xl font-bold text-blue-500">{activeRestaurantCount + passiveRestaurantCount}</h3>
+                  <p className="text-xs md:text-sm font-medium text-muted-foreground">Şubeler</p>
+                  <h3 className="text-xl md:text-3xl font-bold text-blue-500">{activeRestaurantCount + passiveRestaurantCount}</h3>
                 </div>
               </div>
-              <div className="grid grid-cols-2 gap-4 pt-2 border-t">
-                <div className="text-center p-2 rounded-lg bg-green-50">
-                  <p className="text-sm font-medium text-green-600">Aktif</p>
-                  <p className="text-xl font-bold text-green-700">{activeRestaurantCount}</p>
+              <div className="grid grid-cols-2 gap-2 md:gap-4 pt-2 border-t">
+                <div className="text-center p-1 md:p-2 rounded-lg bg-green-50">
+                  <p className="text-xs md:text-sm font-medium text-green-600">Aktif</p>
+                  <p className="text-lg md:text-xl font-bold text-green-700">{activeRestaurantCount}</p>
                 </div>
-                <div className="text-center p-2 rounded-lg bg-red-50">
-                  <p className="text-sm font-medium text-red-600">Pasif</p>
-                  <p className="text-xl font-bold text-red-700">{passiveRestaurantCount}</p>
+                <div className="text-center p-1 md:p-2 rounded-lg bg-red-50">
+                  <p className="text-xs md:text-sm font-medium text-red-600">Pasif</p>
+                  <p className="text-lg md:text-xl font-bold text-red-700">{passiveRestaurantCount}</p>
                 </div>
               </div>
             </div>
@@ -201,15 +201,15 @@ export function OverviewCards({
         )}
 
         {!isLoading ? (
-          <Card className="p-6 bg-card/50 backdrop-blur-sm hover:bg-card/80 transition-colors">
-            <div className="space-y-4">
-              <div className="flex items-center space-x-4">
-                <div className="p-3.5 bg-green-500/10 rounded-2xl">
-                  <Database className="h-9 w-9 text-green-500" />
+          <Card className="p-3 md:p-6 bg-card/50 backdrop-blur-sm hover:bg-card/80 transition-colors">
+            <div className="space-y-2 md:space-y-4">
+              <div className="flex items-center space-x-2 md:space-x-4">
+                <div className="p-2 md:p-3.5 bg-green-500/10 rounded-xl md:rounded-2xl">
+                  <Database className="h-6 w-6 md:h-9 md:w-9 text-green-500" />
                 </div>
                 <div>
-                  <p className="text-sm font-medium text-muted-foreground">Veritabanları</p>
-                  <h3 className="text-3xl font-bold text-green-500">{connectionsCount}</h3>
+                  <p className="text-xs md:text-sm font-medium text-muted-foreground">Veritabanları</p>
+                  <h3 className="text-xl md:text-3xl font-bold text-green-500">{connectionsCount}</h3>
                 </div>
               </div>
             </div>
@@ -218,12 +218,12 @@ export function OverviewCards({
           <DatabasesCardSkeleton />
         )}
 
-        <Card className="p-6 bg-card/50 backdrop-blur-sm hover:bg-card/80 transition-colors">
+        <Card className="p-3 md:p-6 bg-card/50 backdrop-blur-sm hover:bg-card/80 transition-colors">
           <div className="h-full flex items-center justify-center text-muted-foreground">
           </div>
         </Card>
 
-        <Card className="p-6 bg-card/50 backdrop-blur-sm hover:bg-card/80 transition-colors">
+        <Card className="p-3 md:p-6 bg-card/50 backdrop-blur-sm hover:bg-card/80 transition-colors">
           <div className="h-full flex items-center justify-center text-muted-foreground">
           </div>
         </Card>

@@ -122,26 +122,26 @@ export function SettingsTab() {
   };
 
   return (
-    <Card className="p-6 bg-card/50 backdrop-blur-sm">
-      <h2 className="text-xl font-semibold mb-6 flex items-center">
-        <SettingsIcon className="w-5 h-5 mr-2 text-primary" />
+    <Card className="p-3 md:p-6 bg-card/50 backdrop-blur-sm">
+      <h2 className="text-lg md:text-xl font-semibold mb-3 md:mb-6 flex items-center">
+        <SettingsIcon className="w-4 h-4 md:w-5 md:h-5 mr-1.5 md:mr-2 text-primary" />
         Sistem Ayarları
       </h2>
-      <div className="space-y-8">
+      <div className="space-y-4 md:space-y-8">
         <div>
-          <div className="flex justify-between items-center mb-4">
-            <h3 className="text-lg font-medium flex items-center">
-              <ServerIcon className="w-4 h-4 mr-2 text-primary" />
+          <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2 sm:gap-0 mb-3 md:mb-4">
+            <h3 className="text-base md:text-lg font-medium flex items-center">
+              <ServerIcon className="w-3.5 h-3.5 md:w-4 md:h-4 mr-1.5 md:mr-2 text-primary" />
               SQL Server Bağlantıları
             </h3>
             <Dialog open={!!editingConnection} onOpenChange={(open) => !open && setEditingConnection(null)}>
               <DialogTrigger asChild>
-                <Button onClick={() => setEditingConnection(emptyConnection)}>
-                  <PlusIcon className="w-4 h-4 mr-2" />
+                <Button size="sm" className="w-full sm:w-auto" onClick={() => setEditingConnection(emptyConnection)}>
+                  <PlusIcon className="w-3.5 h-3.5 md:w-4 md:h-4 mr-1.5 md:mr-2" />
                   Yeni Bağlantı
                 </Button>
               </DialogTrigger>
-              <DialogContent>
+              <DialogContent className="max-w-[95vw] sm:max-w-md">
                 <DialogHeader>
                   <DialogTitle>
                     {editingConnection?.id ? 'Bağlantıyı Düzenle' : 'Yeni Bağlantı'}
@@ -158,13 +158,15 @@ export function SettingsTab() {
             </Dialog>
           </div>
 
-          <ConnectionTable
-            connections={connections}
-            onEdit={setEditingConnection}
-            onDelete={setDeletingConnection}
-            onTest={handleTest}
-            isTestingConnection={isTestingConnection || undefined}
-          />
+          <div className="overflow-x-auto">
+            <ConnectionTable
+              connections={connections}
+              onEdit={setEditingConnection}
+              onDelete={setDeletingConnection}
+              onTest={handleTest}
+              isTestingConnection={isTestingConnection || undefined}
+            />
+          </div>
         </div>
       </div>
 
