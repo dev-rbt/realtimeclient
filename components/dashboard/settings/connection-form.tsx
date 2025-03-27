@@ -18,15 +18,15 @@ interface ConnectionFormProps {
 export default function ConnectionForm({ connection, onSave, onCancel }: ConnectionFormProps) {
   const [formData, setFormData] = useState<SqlConnection>(connection);
   const [targetFormData, setTargetFormData] = useState<Omit<SqlConnection, 'id' | 'sameSourceAndTarget'>>({
-    name: connection.name ? `${connection.name} (Hedef)` : '',
-    host: connection.host,
-    port: connection.port,
-    dbName: connection.dbName,
-    userName: connection.userName,
-    password: connection.password,
-    trustServerCertificate: connection.trustServerCertificate,
-    encrypt: connection.encrypt,
-    connectTimeout: connection.connectTimeout,
+    name: connection.targetConnection?.name || (connection.name ? `${connection.name} (Hedef)` : ''),
+    host: connection.targetConnection?.host || connection.host,
+    port: connection.targetConnection?.port || connection.port,
+    dbName: connection.targetConnection?.dbName || connection.dbName,
+    userName: connection.targetConnection?.userName || connection.userName,
+    password: connection.targetConnection?.password || connection.password,
+    trustServerCertificate: connection.targetConnection?.trustServerCertificate || connection.trustServerCertificate,
+    encrypt: connection.targetConnection?.encrypt || connection.encrypt,
+    connectTimeout: connection.targetConnection?.connectTimeout || connection.connectTimeout,
     tenantId: connection.tenantId
   });
   const [isSaving, setIsSaving] = useState(false);
@@ -40,15 +40,15 @@ export default function ConnectionForm({ connection, onSave, onCancel }: Connect
   useEffect(() => {
     setFormData(connection);
     setTargetFormData({
-      name: connection.name ? `${connection.name} (Hedef)` : '',
-      host: connection.host,
-      port: connection.port,
-      dbName: connection.dbName,
-      userName: connection.userName,
-      password: connection.password,
-      trustServerCertificate: connection.trustServerCertificate,
-      encrypt: connection.encrypt,
-      connectTimeout: connection.connectTimeout,
+      name: connection.targetConnection?.name || (connection.name ? `${connection.name} (Hedef)` : ''),
+      host: connection.targetConnection?.host || connection.host,
+      port: connection.targetConnection?.port || connection.port,
+      dbName: connection.targetConnection?.dbName || connection.dbName,
+      userName: connection.targetConnection?.userName || connection.userName,
+      password: connection.targetConnection?.password || connection.password,
+      trustServerCertificate: connection.targetConnection?.trustServerCertificate || connection.trustServerCertificate,
+      encrypt: connection.targetConnection?.encrypt || connection.encrypt,
+      connectTimeout: connection.targetConnection?.connectTimeout || connection.connectTimeout,
       tenantId: connection.tenantId
     });
   }, [connection]);
@@ -216,7 +216,8 @@ export default function ConnectionForm({ connection, onSave, onCancel }: Connect
         return;
       }
 
-      const targetModel = {
+      // Always create targetConnection regardless of sameSourceAndTarget value
+      const targetConnection = {
         name: targetFormData.name,
         host: targetFormData.host,
         port: targetFormData.port,
@@ -242,7 +243,7 @@ export default function ConnectionForm({ connection, onSave, onCancel }: Connect
           encrypt: formData.encrypt,
           connectTimeout: formData.connectTimeout,
           tenantId: formData.tenantId,
-          targetModel: targetModel
+          targetConnection: targetConnection
         };
         
         await onSave(updateModel);
@@ -259,7 +260,7 @@ export default function ConnectionForm({ connection, onSave, onCancel }: Connect
           connectTimeout: formData.connectTimeout,
           tenantId: formData.tenantId,
           sameSourceAndTarget: formData.sameSourceAndTarget,
-          targetModel: targetModel
+          targetConnection: targetConnection
         };
         
         await onSave(createModel);

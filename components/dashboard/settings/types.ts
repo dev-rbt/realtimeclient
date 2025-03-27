@@ -1,8 +1,8 @@
 import { SqlConnection as StoreSqlConnection } from '@/store/useConnectionsStore';
 
-// Extend the SqlConnection type from the store to include targetModel
+// Extend the SqlConnection type from the store to include targetConnection
 export interface SqlConnection extends StoreSqlConnection {
-  targetModel?: TargetConnections;
+  targetConnection?: TargetConnections;
 }
 
 export interface TestResult {
@@ -39,7 +39,7 @@ export interface CreateConnectionModel {
   connectTimeout: number;
   tenantId: string;
   sameSourceAndTarget: boolean;
-  targetModel?: TargetConnections;
+  targetConnection?: TargetConnections;
 }
 
 export interface UpdateConnectionModel {
@@ -55,5 +55,5 @@ export interface UpdateConnectionModel {
   encrypt: boolean;
   connectTimeout: number;
   tenantId: string;
-  targetModel?: TargetConnections;
+  targetConnection?: TargetConnections;
 }

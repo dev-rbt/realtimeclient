@@ -34,7 +34,7 @@ const emptyConnection: SqlConnection = {
   connectTimeout: 30000,
   tenantId: '',
   sameSourceAndTarget: true,
-  targetModel: undefined
+  targetConnection: undefined
 };
 
 export function SettingsTab() {
