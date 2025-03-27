@@ -13,6 +13,7 @@ export interface SqlConnection {
   encrypt: boolean;
   connectTimeout: number;
   tenantId: string;
+  sameSourceAndTarget: boolean;
 }
 
 interface ConnectionsState {

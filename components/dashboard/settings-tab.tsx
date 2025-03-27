@@ -1,5 +1,5 @@
 import { Card } from '@/components/ui/card';
-import { SettingsIcon, ServerIcon, PlusIcon } from 'lucide-react';
+import { SettingsIcon, ServerIcon, PlusIcon, CopyIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { useToast } from '@/components/ui/use-toast';
@@ -9,10 +9,17 @@ import ConnectionForm from '@/components/dashboard/settings/connection-form';
 import ConnectionTable from '@/components/dashboard/settings/connection-table';
 import ConnectionTestDialog from '@/components/dashboard/settings/connection-test-dialog';
 import DeleteDialog from '@/components/dashboard/settings/delete-dialog';
-import { TestResult } from '@/components/dashboard/settings/types';
-import { SqlConnection } from '@/store/useConnectionsStore';
+import { TestResult, CreateConnectionModel, UpdateConnectionModel, SqlConnection } from '@/components/dashboard/settings/types';
 import { useConnections } from '@/hooks/useConnections';
 import { useConnectionsStore } from '@/store/useConnectionsStore';
+import { 
+  DropdownMenu, 
+  DropdownMenuContent, 
+  DropdownMenuItem, 
+  DropdownMenuTrigger,
+  DropdownMenuSeparator,
+  DropdownMenuLabel
+} from "@/components/ui/dropdown-menu";
 
 const emptyConnection: SqlConnection = {
   id: '',
@@ -25,7 +32,9 @@ const emptyConnection: SqlConnection = {
   trustServerCertificate: true,
   encrypt: true,
   connectTimeout: 30000,
-  tenantId: ''
+  tenantId: '',
+  sameSourceAndTarget: true,
+  targetModel: undefined
 };
 
 export function SettingsTab() {
@@ -33,29 +42,37 @@ export function SettingsTab() {
   const { fetchConnections } = useConnectionsStore();
   const [editingConnection, setEditingConnection] = useState<SqlConnection | null>(null);
   const [testResult, setTestResult] = useState<TestResult | null>(null);
-  const [isTestingConnection, setIsTestingConnection] = useState<string | null>(null);
-  const [deletingConnection, setDeletingConnection] = useState<SqlConnection | null>(null);
+  const [testDialogOpen, setTestDialogOpen] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [connectionToDelete, setConnectionToDelete] = useState<SqlConnection | null>(null);
+  const [connectionToTest, setConnectionToTest] = useState<SqlConnection | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
   const { toast } = useToast();
   const api = useApi();
 
-  const handleSave = async (connection: SqlConnection) => {
+  const handleSaveConnection = async (connectionData: CreateConnectionModel | UpdateConnectionModel) => {
     try {
-      let response;
-      if (connection.id) {
-        response = await api.put('/connection', connection);
+      if ('id' in connectionData && connectionData.id) {
+        // Update existing connection
+        await api.put('/connection', connectionData);
+        toast({
+          title: "Başarılı",
+          description: "SQL Server bağlantısı güncellendi.",
+        });
       } else {
-        response = await api.post('/connection', connection);
+        // Create new connection
+        await api.post('/connection', connectionData);
+        toast({
+          title: "Başarılı",
+          description: "SQL Server bağlantısı oluşturuldu.",
+        });
       }
-
-      setEditingConnection(null);
-      // Refresh connections from the store after saving
+      
+      // Refresh connections list
       await fetchConnections();
       
-      toast({
-        title: "Başarılı",
-        description: "SQL Server bağlantısı kaydedildi.",
-      });
+      // Close dialog
+      setEditingConnection(null);
     } catch (error: any) {
       toast({
         title: "Hata",
@@ -66,7 +83,8 @@ export function SettingsTab() {
   };
 
   const handleTest = async (connection: SqlConnection) => {
-    setIsTestingConnection(connection.id);
+    setConnectionToTest(connection);
+    setTestDialogOpen(true);
     try {
       await api.post('/connection/test', {
         name: connection.name,
@@ -78,7 +96,8 @@ export function SettingsTab() {
         trustServerCertificate: connection.trustServerCertificate,
         encrypt: connection.encrypt,
         connectTimeout: connection.connectTimeout,
-        tenantId: connection.tenantId
+        tenantId: connection.tenantId,
+        sameSourceAndTarget: connection.sameSourceAndTarget
       });
 
       setTestResult({
@@ -90,18 +109,16 @@ export function SettingsTab() {
         success: false,
         message: error.response?.data?.message || "Bağlantı testi başarısız! Veritabanına erişilemiyor."
       });
-    } finally {
-      setIsTestingConnection(null);
     }
   };
 
   const handleDelete = async () => {
-    if (!deletingConnection) return;
+    if (!connectionToDelete) return;
 
     setIsDeleting(true);
     try {
-      await api.delete(`/connection/${deletingConnection.id}`);
-      setDeletingConnection(null);
+      await api.delete(`/connection/${connectionToDelete.id}`);
+      setConnectionToDelete(null);
       
       // Refresh connections from the store after deleting
       await fetchConnections();
@@ -119,6 +136,20 @@ export function SettingsTab() {
     } finally {
       setIsDeleting(false);
     }
+  };
+
+  // Function to copy an existing connection to the current editing connection
+  const handleCopyConnection = (sourceConnection: SqlConnection) => {
+    if (!editingConnection) return;
+    
+    // Create a deep copy of the source connection
+    const connectionCopy: SqlConnection = {
+      ...sourceConnection,
+      id: editingConnection.id, // Keep the current ID (empty for new connections)
+      name: editingConnection.id ? editingConnection.name : `${sourceConnection.name} (Kopya)` // Suggest a name for new connections
+    };
+    
+    setEditingConnection(connectionCopy);
   };
 
   return (
@@ -141,44 +172,70 @@ export function SettingsTab() {
                   Yeni Bağlantı
                 </Button>
               </DialogTrigger>
-              <DialogContent className="max-w-[95vw] sm:max-w-md">
-                <DialogHeader>
+              <DialogContent className="max-w-[95vw] sm:max-w-[550px] max-h-[90vh] overflow-hidden flex flex-col">
+                <DialogHeader className="flex flex-row items-center justify-between">
                   <DialogTitle>
                     {editingConnection?.id ? 'Bağlantıyı Düzenle' : 'Yeni Bağlantı'}
                   </DialogTitle>
+                  
+                  {connections.length > 0 && (
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="outline" size="sm" className="ml-2">
+                          <CopyIcon className="h-4 w-4 mr-1.5" />
+                          Bağlantı Kopyala
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end" className="w-56">
+                        <DropdownMenuLabel>Mevcut Bağlantılar</DropdownMenuLabel>
+                        <DropdownMenuSeparator />
+                        {connections.map((conn) => (
+                          <DropdownMenuItem 
+                            key={conn.id}
+                            onClick={() => handleCopyConnection(conn)}
+                            className="cursor-pointer"
+                          >
+                            <ServerIcon className="h-4 w-4 mr-2 text-muted-foreground" />
+                            <span className="truncate">{conn.name}</span>
+                          </DropdownMenuItem>
+                        ))}
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  )}
                 </DialogHeader>
-                {editingConnection && (
-                  <ConnectionForm
-                    connection={editingConnection}
-                    onSave={handleSave}
-                    onCancel={() => setEditingConnection(null)}
-                  />
-                )}
+                <div className="overflow-y-auto pr-1 -mr-1">
+                  {editingConnection && (
+                    <ConnectionForm
+                      connection={editingConnection}
+                      onSave={handleSaveConnection}
+                      onCancel={() => setEditingConnection(null)}
+                    />
+                  )}
+                </div>
               </DialogContent>
             </Dialog>
           </div>
 
-          <div className="overflow-x-auto">
-            <ConnectionTable
-              connections={connections}
-              onEdit={setEditingConnection}
-              onDelete={setDeletingConnection}
-              onTest={handleTest}
-              isTestingConnection={isTestingConnection || undefined}
-            />
-          </div>
+          <ConnectionTable
+            connections={connections}
+            onEdit={setEditingConnection}
+            onDelete={setConnectionToDelete}
+            onTest={handleTest}
+            connectionToTest={connectionToTest}
+          />
         </div>
       </div>
 
       <ConnectionTestDialog
         testResult={testResult}
-        onOpenChange={(open) => !open && setTestResult(null)}
+        isOpen={testDialogOpen}
+        onOpenChange={(open) => !open && setTestDialogOpen(false)}
       />
 
       <DeleteDialog
-        isOpen={!!deletingConnection}
+        isOpen={!!connectionToDelete}
         isDeleting={isDeleting}
-        onOpenChange={(open) => !open && setDeletingConnection(null)}
+        onOpenChange={(open) => !open && setConnectionToDelete(null)}
         onConfirm={handleDelete}
       />
     </Card>
