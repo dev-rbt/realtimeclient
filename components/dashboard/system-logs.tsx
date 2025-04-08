@@ -52,7 +52,7 @@ export function SystemLogs({ logs, logsError }: { logs: SystemLog[] | null, logs
           <Button
             variant="ghost"
             size="icon"
-            onClick={clearLogs}
+            onClick={() => {}}
             title="Logları Yenile"
           >
             <RefreshCw className="h-4 w-4" />
