@@ -151,6 +151,7 @@ export default function ConnectionForm({ connection, onSave, onCancel }: Connect
           userName: targetFormData.userName,
           password: targetFormData.password,
           trustServerCertificate: targetFormData.trustServerCertificate,
+          sameSourceAndTarget: false,
           encrypt: targetFormData.encrypt,
           connectTimeout: targetFormData.connectTimeout,
           tenantId: targetFormData.tenantId
