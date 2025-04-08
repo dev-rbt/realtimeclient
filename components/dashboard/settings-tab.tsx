@@ -110,6 +110,7 @@ export function SettingsTab() {
           userName: connection.targetConnection.userName,
           password: connection.targetConnection.password,
           trustServerCertificate: connection.targetConnection.trustServerCertificate,
+          sameSourceAndTarget: false,
           encrypt: connection.targetConnection.encrypt,
           connectTimeout: connection.targetConnection.connectTimeout,
           tenantId: connection.tenantId

@@ -40,9 +40,6 @@ export function SystemLogs({ logs, logsError }: { logs: SystemLog[] | null, logs
     }
   };
 
-  // Log temizleme işlevi (daha sonra bu özellik eklenmek istenirse)
-  const clearLogs = () => {
-  };
 
   return (
     <div className="h-full flex flex-col">
