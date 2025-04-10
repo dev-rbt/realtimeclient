@@ -34,9 +34,14 @@ export function CompanyCards({ setActiveRestaurantCount, setPassiveRestaurantCou
   const [documentType, setDocumentType] = useState<'sale' | 'other'>('sale');
   const [showBothTypes, setShowBothTypes] = useState<boolean>(true);
 
-  setActiveRestaurantCount(tenants.reduce((accumulator, currentValue) => accumulator + currentValue.activeBranches, 0));
-  setPassiveRestaurantCount(tenants.reduce((accumulator, currentValue) => accumulator + currentValue.passiveBranches, 0));
-  
+  useEffect(() => {
+    const activeCount = tenants.reduce((accumulator, currentValue) => accumulator + currentValue.activeBranches, 0);
+    const passiveCount = tenants.reduce((accumulator, currentValue) => accumulator + currentValue.passiveBranches, 0);
+    
+    setActiveRestaurantCount(activeCount);
+    setPassiveRestaurantCount(passiveCount);
+  }, [tenants, setActiveRestaurantCount, setPassiveRestaurantCount]);
+
   // Calculate total for each category
   const calculateTotal = (metrics: any) => {
     let total = 0;

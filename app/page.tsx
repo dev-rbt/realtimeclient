@@ -115,7 +115,6 @@ export default function Home() {
         logs={logs} 
         logsError={logsError} 
       />
-
     </>
   );
 }
