@@ -5,7 +5,7 @@ interface DetailMetricItemProps {
     icon: React.ReactNode;
     title: string;
     count: number | undefined;
-    size: number | undefined;
+    size?: number | undefined;
     loading: boolean;
 }
   
@@ -24,7 +24,9 @@ function DetailMetricItem({ icon, title, count, size, loading }: DetailMetricIte
         ) : (
           <>
             <p className="text-base font-semibold">{formatNumber(count)}</p>
-            <p className="text-xs text-muted-foreground">{formatSizeToMB(size)}MB</p>
+            {size !== undefined && (
+              <p className="text-xs text-muted-foreground">{formatSizeToMB(size)}MB</p>
+            )}
           </>
         )}
       </div>
