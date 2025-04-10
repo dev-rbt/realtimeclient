@@ -16,7 +16,9 @@ const Progress = React.forwardRef<
   // Ensure value is within valid range
   const safeValue = React.useMemo(() => {
     if (value === null || value === undefined) return 0;
-    return Math.max(0, Math.min(100, value));
+    // Ensure value is a number and within range
+    const numValue = Number(value);
+    return isNaN(numValue) ? 0 : Math.max(0, Math.min(100, numValue));
   }, [value]);
 
   return (
