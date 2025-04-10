@@ -108,13 +108,11 @@ export default function Home() {
   }, [isPollingEnabled]); // Only re-run if polling state changes
 
   return (
-    <>
-      <Dashboard 
-        metrics={systemMetrics} 
-        error={systemError} 
-        logs={logs} 
-        logsError={logsError} 
-      />
-    </>
+     <Dashboard 
+     metrics={systemMetrics} 
+     error={systemError} 
+     logs={logs} 
+     logsError={logsError} 
+   />
   );
 }

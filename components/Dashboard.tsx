@@ -90,7 +90,7 @@ export default function Dashboard({ metrics, error, logs, logsError }: { metrics
         return (
           <div className="space-y-6">
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div className="col-span-2 space-y-4">
                 <div className="rounded-xl border bg-card shadow-sm overflow-hidden">
                   <div className="border-b bg-muted/50 px-4 py-3">
@@ -255,7 +255,7 @@ export default function Dashboard({ metrics, error, logs, logsError }: { metrics
                 </ScrollArea>
               </div>
             </div>
-            
+             
             <CompanyCards setActiveRestaurantCount={setActiveRestaurantCount} setPassiveRestaurantCount={setPassiveRestaurantCount} />
           </div>
         );

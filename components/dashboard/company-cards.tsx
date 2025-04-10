@@ -7,7 +7,7 @@ import CompanyCard from './company-cards/company-card';
 import useMetricsData from '@/hooks/use-metrics';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { formatNumber } from "@/lib/utils";
-import { Progress } from "@/components/ui/progress";
+import { SimpleProgress } from "@/components/ui/simple-progress";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { useState, useMemo, useEffect } from 'react';
@@ -454,7 +454,7 @@ export function CompanyCards({ setActiveRestaurantCount, setPassiveRestaurantCou
                                 {formatNumber(saleMetrics.created.data?.count || 0)}
                               </span>
                               <div className="w-full max-w-[50px] mt-1">
-                                <Progress 
+                                <SimpleProgress 
                                   value={getPercentage(saleMetrics, 'created')} 
                                   className="h-1.5 bg-gray-100" 
                                   indicatorClassName="bg-purple-500" 
@@ -476,7 +476,7 @@ export function CompanyCards({ setActiveRestaurantCount, setPassiveRestaurantCou
                                 {formatNumber(saleMetrics.processing.data?.count || 0)}
                               </span>
                               <div className="w-full max-w-[50px] mt-1">
-                                <Progress 
+                                <SimpleProgress 
                                   value={getPercentage(saleMetrics, 'processing')} 
                                   className="h-1.5 bg-gray-100" 
                                   indicatorClassName="bg-blue-500" 
@@ -498,7 +498,7 @@ export function CompanyCards({ setActiveRestaurantCount, setPassiveRestaurantCou
                                 {formatNumber(saleMetrics.completed.data?.count || 0)}
                               </span>
                               <div className="w-full max-w-[50px] mt-1">
-                                <Progress 
+                                <SimpleProgress 
                                   value={getPercentage(saleMetrics, 'completed')} 
                                   className="h-1.5 bg-gray-100" 
                                   indicatorClassName="bg-green-500" 
@@ -520,7 +520,7 @@ export function CompanyCards({ setActiveRestaurantCount, setPassiveRestaurantCou
                                 {formatNumber(saleMetrics.ignore.data?.count || 0)}
                               </span>
                               <div className="w-full max-w-[50px] mt-1">
-                                <Progress 
+                                <SimpleProgress 
                                   value={getPercentage(saleMetrics, 'ignore')} 
                                   className="h-1.5 bg-gray-100" 
                                   indicatorClassName="bg-gray-400" 
@@ -542,7 +542,7 @@ export function CompanyCards({ setActiveRestaurantCount, setPassiveRestaurantCou
                                 {formatNumber(saleMetrics.error.data?.count || 0)}
                               </span>
                               <div className="w-full max-w-[50px] mt-1">
-                                <Progress 
+                                <SimpleProgress 
                                   value={getPercentage(saleMetrics, 'error')} 
                                   className="h-1.5 bg-gray-100" 
                                   indicatorClassName="bg-red-500" 
@@ -742,7 +742,7 @@ export function CompanyCards({ setActiveRestaurantCount, setPassiveRestaurantCou
                                   {formatNumber(otherMetrics.created.data?.count || 0)}
                                 </span>
                                 <div className="w-full max-w-[50px] mt-1">
-                                  <Progress 
+                                  <SimpleProgress 
                                     value={getPercentage(otherMetrics, 'created')} 
                                     className="h-1.5 bg-gray-100" 
                                     indicatorClassName="bg-purple-500" 
@@ -764,7 +764,7 @@ export function CompanyCards({ setActiveRestaurantCount, setPassiveRestaurantCou
                                   {formatNumber(otherMetrics.processing.data?.count || 0)}
                                 </span>
                                 <div className="w-full max-w-[50px] mt-1">
-                                  <Progress 
+                                  <SimpleProgress 
                                     value={getPercentage(otherMetrics, 'processing')} 
                                     className="h-1.5 bg-gray-100" 
                                     indicatorClassName="bg-blue-500" 
@@ -786,7 +786,7 @@ export function CompanyCards({ setActiveRestaurantCount, setPassiveRestaurantCou
                                   {formatNumber(otherMetrics.completed.data?.count || 0)}
                                 </span>
                                 <div className="w-full max-w-[50px] mt-1">
-                                  <Progress 
+                                  <SimpleProgress 
                                     value={getPercentage(otherMetrics, 'completed')} 
                                     className="h-1.5 bg-gray-100" 
                                     indicatorClassName="bg-green-500" 
@@ -808,7 +808,7 @@ export function CompanyCards({ setActiveRestaurantCount, setPassiveRestaurantCou
                                   {formatNumber(otherMetrics.ignore.data?.count || 0)}
                                 </span>
                                 <div className="w-full max-w-[50px] mt-1">
-                                  <Progress 
+                                  <SimpleProgress 
                                     value={getPercentage(otherMetrics, 'ignore')} 
                                     className="h-1.5 bg-gray-100" 
                                     indicatorClassName="bg-gray-400" 
@@ -830,7 +830,7 @@ export function CompanyCards({ setActiveRestaurantCount, setPassiveRestaurantCou
                                   {formatNumber(otherMetrics.error.data?.count || 0)}
                                 </span>
                                 <div className="w-full max-w-[50px] mt-1">
-                                  <Progress 
+                                  <SimpleProgress 
                                     value={getPercentage(otherMetrics, 'error')} 
                                     className="h-1.5 bg-gray-100" 
                                     indicatorClassName="bg-red-500" 
