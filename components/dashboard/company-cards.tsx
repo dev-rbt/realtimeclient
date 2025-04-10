@@ -55,10 +55,13 @@ export function CompanyCards({ setActiveRestaurantCount, setPassiveRestaurantCou
   
   // Calculate percentages for progress bars
   const getPercentage = (metrics: any, status: string) => {
+    if (!metrics) return 0;
     const total = calculateTotal(metrics);
     if (total === 0) return 0;
     const count = metrics[status]?.data?.count || 0;
-    return (count / total) * 100;
+    // Ensure we return a valid number between 0-100
+    const percentage = (count / total) * 100;
+    return isNaN(percentage) ? 0 : Math.min(100, Math.max(0, percentage));
   };
   
   // Check if a specific metric is loading
