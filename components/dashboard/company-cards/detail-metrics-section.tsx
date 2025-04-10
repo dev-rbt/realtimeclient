@@ -16,7 +16,7 @@ function DetailMetricsSection({ title, metrics }: DetailMetricsSectionProps) {
             <div className="space-y-2">
                 <DetailMetricItem
                     icon={<Clock className="h-5 w-5 text-orange-500" />}
-                    label="İşlenen"
+                    title="İşlenen"
                     count={metrics.processing.data?.count}
                     size={metrics.processing.data?.size}
                     loading={metrics.processing.loading}
@@ -25,7 +25,7 @@ function DetailMetricsSection({ title, metrics }: DetailMetricsSectionProps) {
                 />
                 <DetailMetricItem
                     icon={<CheckCircle2 className="h-5 w-5 text-green-500" />}
-                    label="Başarılı"
+                    title="Başarılı"
                     count={metrics.completed.data?.count}
                     size={metrics.completed.data?.size}
                     loading={metrics.completed.loading}
@@ -34,7 +34,7 @@ function DetailMetricsSection({ title, metrics }: DetailMetricsSectionProps) {
                 />
                 <DetailMetricItem
                     icon={<EyeOff className="h-5 w-5 text-blue-500" />}
-                    label="Yoksayılan"
+                    title="Yoksayılan"
                     count={metrics.ignore.data?.count}
                     size={metrics.ignore.data?.size}
                     loading={metrics.ignore.loading}
@@ -43,7 +43,7 @@ function DetailMetricsSection({ title, metrics }: DetailMetricsSectionProps) {
                 />
                 <DetailMetricItem
                     icon={<XCircle className="h-5 w-5 text-red-500" />}
-                    label="Hatalı"
+                    title="Hatalı"
                     count={metrics.error.data?.count}
                     size={metrics.error.data?.size}
                     loading={metrics.error.loading}
@@ -52,7 +52,7 @@ function DetailMetricsSection({ title, metrics }: DetailMetricsSectionProps) {
                 />
                 <DetailMetricItem
                     icon={<AlertCircle className="h-5 w-5 text-purple-500" />}
-                    label="Kuyrukta Bekleyen"
+                    title="Kuyrukta Bekleyen"
                     count={metrics.created.data?.count}
                     size={metrics.created.data?.size}
                     loading={metrics.created.loading}
@@ -61,7 +61,7 @@ function DetailMetricsSection({ title, metrics }: DetailMetricsSectionProps) {
                 />
                 <DetailMetricItem
                     icon={<Database className="h-5 w-5 text-gray-700" />}
-                    label="Toplam"
+                    title="Toplam"
                     count={metrics.total.count}
                     size={metrics.total.size}
                     loading={false}
