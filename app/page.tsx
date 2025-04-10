@@ -115,17 +115,7 @@ export default function Home() {
         logs={logs} 
         logsError={logsError} 
       />
-      {/* Hidden control for debugging - remove in production */}
-      <div style={{ position: 'fixed', bottom: 0, right: 0, padding: '5px', background: '#f0f0f0', fontSize: '10px', opacity: 0.7 }}>
-        <label>
-          <input 
-            type="checkbox" 
-            checked={isPollingEnabled} 
-            onChange={() => setIsPollingEnabled(!isPollingEnabled)} 
-          />
-          Log Polling ({isPollingEnabled ? 'Active' : 'Paused'})
-        </label>
-      </div>
+
     </>
   );
 }

@@ -3,6 +3,24 @@ import { SqlConnection as StoreSqlConnection } from '@/store/useConnectionsStore
 // Extend the SqlConnection type from the store to include targetConnection
 export interface SqlConnection extends StoreSqlConnection {
   targetConnection?: TargetConnections;
+  useNewComboMenu?: boolean;
+  useCouponService?: boolean;
+  workerIsEnabled?: boolean;
+  cpmNotAllowGetData?: boolean;
+}
+
+export interface TenantSettings {
+  id?: string;
+  tenantId: string;
+  useNewComboMenu: boolean;
+  useCouponService: boolean;
+  workerIsEnabled: boolean;
+  cpmNotAllowGetData: boolean;
+}
+
+export interface ConnectionWithSettings {
+  connection: SqlConnection;
+  tenantSettings: TenantSettings;
 }
 
 export interface TestResult {
@@ -25,6 +43,7 @@ export interface TargetConnections {
   trustServerCertificate: boolean;
   encrypt: boolean;
   connectTimeout: number;
+  tenantId?: string;
 }
 
 export interface CreateConnectionModel {
@@ -40,6 +59,10 @@ export interface CreateConnectionModel {
   tenantId: string;
   sameSourceAndTarget: boolean;
   targetConnection?: TargetConnections;
+  useNewComboMenu?: boolean;
+  useCouponService?: boolean;
+  workerIsEnabled?: boolean;
+  cpmNotAllowGetData?: boolean;
 }
 
 export interface UpdateConnectionModel {
@@ -51,9 +74,13 @@ export interface UpdateConnectionModel {
   userName: string;
   password: string;
   trustServerCertificate: boolean;
-  sameSourceAndTarget: boolean;
   encrypt: boolean;
   connectTimeout: number;
   tenantId: string;
+  sameSourceAndTarget: boolean;
   targetConnection?: TargetConnections;
+  useNewComboMenu?: boolean;
+  useCouponService?: boolean;
+  workerIsEnabled?: boolean;
+  cpmNotAllowGetData?: boolean;
 }

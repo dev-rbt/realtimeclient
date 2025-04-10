@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import useApi from '@/hooks/use-api';
+import { ConnectionWithSettings, TenantSettings } from '@/components/dashboard/settings/types';
 
 export interface SqlConnection {
   id: string;
@@ -14,6 +15,10 @@ export interface SqlConnection {
   connectTimeout: number;
   tenantId: string;
   sameSourceAndTarget: boolean;
+  useNewComboMenu?: boolean;
+  useCouponService?: boolean;
+  workerIsEnabled?: boolean;
+  cpmNotAllowGetData?: boolean;
 }
 
 interface ConnectionsState {
@@ -35,12 +40,23 @@ export const useConnectionsStore = create<ConnectionsState>((set) => ({
     set({ isLoading: true });
     
     try {
-      const response = await api.get<SqlConnection[]>('/connection');
+      const response = await api.get<ConnectionWithSettings[]>('/connectionWithSettings');
       const now = new Date();
       const formattedDate = `${String(now.getDate()).padStart(2, '0')}-${String(now.getMonth() + 1).padStart(2, '0')}-${now.getFullYear()} ${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}:${String(now.getSeconds()).padStart(2, '0')}`;
       
+      // Merge connection and settings data
+      const mergedConnections = response.data.map(item => {
+        return {
+          ...item.connection,
+          useNewComboMenu: item.tenantSettings?.useNewComboMenu,
+          useCouponService: item.tenantSettings?.useCouponService,
+          workerIsEnabled: item.tenantSettings?.workerIsEnabled,
+          cpmNotAllowGetData: item.tenantSettings?.cpmNotAllowGetData
+        };
+      });
+      
       set({ 
-        connections: response.data, 
+        connections: mergedConnections, 
         lastUpdated: formattedDate, 
         error: null,
         isLoading: false

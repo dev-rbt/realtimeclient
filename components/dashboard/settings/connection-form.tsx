@@ -9,6 +9,8 @@ import useApi from '@/hooks/use-api';
 import { SqlConnection, TestResult, ConnectionTestResult, UpdateConnectionModel, CreateConnectionModel } from '@/components/dashboard/settings/types';
 import { useConnections } from '@/hooks/useConnections';
 import { useConnectionsStore } from '@/store/useConnectionsStore';
+import { Separator } from '@/components/ui/separator';
+import { cn } from '@/lib/utils';
 
 interface ConnectionFormProps {
   connection: SqlConnection;
@@ -199,83 +201,54 @@ export default function ConnectionForm({ connection, onSave, onCancel }: Connect
       
       // Check if source connection test was successful
       if (!results.source.success) {
+        setTestResults(results);
+        setIsSaving(false);
         toast({
           title: "Bağlantı Hatası",
-          description: "Kaynak veritabanı bağlantısı başarısız. Lütfen bağlantı bilgilerini kontrol edin.",
+          description: "Kaynak bağlantı testi başarısız oldu. Lütfen bağlantı bilgilerini kontrol edin.",
           variant: "destructive"
         });
-        setIsSaving(false);
         return;
       }
       
-      // Check if target connection test was successful (if not using same connection)
+      // Check if target connection test was successful (if not using same source and target)
       if (!formData.sameSourceAndTarget && results.target && !results.target.success) {
+        setTestResults(results);
+        setIsSaving(false);
         toast({
           title: "Bağlantı Hatası",
-          description: "Hedef veritabanı bağlantısı başarısız. Lütfen bağlantı bilgilerini kontrol edin.",
+          description: "Hedef bağlantı testi başarısız oldu. Lütfen bağlantı bilgilerini kontrol edin.",
           variant: "destructive"
         });
-        setIsSaving(false);
         return;
       }
-
-      // Always create targetConnection regardless of sameSourceAndTarget value
-      const targetConnection = {
-        name: targetFormData.name,
-        host: targetFormData.host,
-        port: targetFormData.port,
-        dbName: targetFormData.dbName,
-        userName: targetFormData.userName,
-        password: targetFormData.password,
-        trustServerCertificate: targetFormData.trustServerCertificate,
-        encrypt: targetFormData.encrypt,
-        connectTimeout: targetFormData.connectTimeout
+      
+      setTestResults(results);
+      
+      // Prepare the data for saving
+      const saveData: UpdateConnectionModel | CreateConnectionModel = {
+        ...formData,
+        targetConnection: formData.sameSourceAndTarget ? undefined : {
+          name: targetFormData.name,
+          host: targetFormData.host,
+          port: targetFormData.port,
+          dbName: targetFormData.dbName,
+          userName: targetFormData.userName,
+          password: targetFormData.password,
+          trustServerCertificate: targetFormData.trustServerCertificate,
+          encrypt: targetFormData.encrypt,
+          connectTimeout: targetFormData.connectTimeout,
+          tenantId: targetFormData.tenantId
+        }
       };
-
-      if (formData.id) {
-        // Update existing connection
-        const updateModel: UpdateConnectionModel = {
-          id: formData.id,
-          name: formData.name,
-          host: formData.host,
-          port: formData.port,
-          dbName: formData.dbName,
-          userName: formData.userName,
-          password: formData.password,
-          trustServerCertificate: formData.trustServerCertificate,
-          sameSourceAndTarget: formData.sameSourceAndTarget,
-          encrypt: formData.encrypt,
-          connectTimeout: formData.connectTimeout,
-          tenantId: formData.tenantId,
-          targetConnection: targetConnection
-        };
-        
-        await onSave(updateModel);
-        
-        // Refresh connections in store after update
-        await fetchConnections();
-      } else {
-        // Create new connection
-        const createModel: CreateConnectionModel = {
-          name: formData.name,
-          host: formData.host,
-          port: formData.port,
-          dbName: formData.dbName,
-          userName: formData.userName,
-          password: formData.password,
-          trustServerCertificate: formData.trustServerCertificate,
-          encrypt: formData.encrypt,
-          connectTimeout: formData.connectTimeout,
-          tenantId: formData.tenantId,
-          sameSourceAndTarget: formData.sameSourceAndTarget,
-          targetConnection: targetConnection
-        };
-        
-        await onSave(createModel);
-        
-        // Refresh connections in store after create
-        await fetchConnections();
-      }
+      
+      await onSave(saveData);
+      await fetchConnections();
+      
+      toast({
+        title: "Başarılı",
+        description: "Bağlantı başarıyla kaydedildi.",
+      });
     } catch (error: any) {
       toast({
         title: "Hata",
@@ -287,366 +260,251 @@ export default function ConnectionForm({ connection, onSave, onCancel }: Connect
     }
   };
 
-  const handleTest = async () => {
-    if (!canTestSourceConnection) {
-      toast({
-        title: "Hata",
-        description: "Kaynak bağlantı testi için sunucu, port, kullanıcı adı ve şifre alanları doldurulmalıdır.",
-        variant: "destructive"
-      });
-      return;
-    }
-
-    if (!formData.sameSourceAndTarget && !canTestTargetConnection) {
-      toast({
-        title: "Hata",
-        description: "Hedef bağlantı testi için sunucu, port, kullanıcı adı ve şifre alanları doldurulmalıdır.",
-        variant: "destructive"
-      });
-      return;
-    }
-
-    setTestResults(null);
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>, isTarget: boolean = false) => {
+    const { name, value, type, checked } = e.target;
+    const inputValue = type === 'checkbox' ? checked : value;
     
-    const results = await testConnection();
-    if (results) {
-      setTestResults(results);
-      
-      let allSuccess = results.source.success;
-      
-      if (!formData.sameSourceAndTarget) {
-        allSuccess = allSuccess && (results.target?.success || false);
-      }
-      
-      toast({
-        title: allSuccess ? "Başarılı" : "Hata",
-        description: allSuccess 
-          ? "Bağlantı testi başarılı! Tüm veritabanlarına erişilebiliyor." 
-          : "Bağlantı testi başarısız! Bir veya daha fazla veritabanına erişilemiyor.",
-        variant: allSuccess ? "default" : "destructive"
-      });
+    if (isTarget) {
+      setTargetFormData(prev => ({
+        ...prev,
+        [name]: inputValue
+      }));
+    } else {
+      setFormData(prev => ({
+        ...prev,
+        [name]: inputValue
+      }));
     }
   };
 
-  const canTestSourceConnection = formData.host && formData.port && formData.userName && formData.password;
-  const canTestTargetConnection = targetFormData.host && targetFormData.port && targetFormData.userName && targetFormData.password;
+  const handleSwitchChange = (checked: boolean, name: string, isTarget: boolean = false) => {
+    if (isTarget) {
+      setTargetFormData(prev => ({
+        ...prev,
+        [name]: checked
+      }));
+    } else {
+      setFormData(prev => ({
+        ...prev,
+        [name]: checked
+      }));
+    }
+  };
+
+  const renderTestResult = (result: TestResult | undefined) => {
+    if (!result) return null;
+    
+    return (
+      <div className={cn(
+        "text-xs rounded-md p-2 mt-1 flex items-center gap-1.5",
+        result.success ? "bg-green-50 text-green-700" : "bg-red-50 text-red-700"
+      )}>
+        {result.success ? (
+          <CheckCircleIcon className="h-3.5 w-3.5 text-green-600 flex-shrink-0" />
+        ) : (
+          <XCircleIcon className="h-3.5 w-3.5 text-red-600 flex-shrink-0" />
+        )}
+        <span className="text-xs">{result.message}</span>
+      </div>
+    );
+  };
+
+  const renderFormField = (
+    label: string, 
+    name: string, 
+    value: string | number | boolean, 
+    type: string = 'text', 
+    isTarget: boolean = false,
+    placeholder: string = ''
+  ) => {
+    return (
+      <div className="mb-3">
+        <Label 
+          htmlFor={`${isTarget ? 'target-' : ''}${name}`}
+          className="text-xs font-medium mb-1.5 block"
+        >
+          {label}
+        </Label>
+        <Input
+          id={`${isTarget ? 'target-' : ''}${name}`}
+          name={name}
+          type={type}
+          value={value as string}
+          onChange={(e) => handleInputChange(e, isTarget)}
+          className="h-8 text-sm"
+          placeholder={placeholder}
+        />
+      </div>
+    );
+  };
+
+  const renderSwitchField = (
+    label: string, 
+    name: string, 
+    checked: boolean, 
+    isTarget: boolean = false
+  ) => {
+    return (
+      <div className="flex items-center justify-between mb-3">
+        <Label 
+          htmlFor={`${isTarget ? 'target-' : ''}${name}`}
+          className="text-xs font-medium cursor-pointer"
+        >
+          {label}
+        </Label>
+        <Switch
+          id={`${isTarget ? 'target-' : ''}${name}`}
+          name={name}
+          checked={checked}
+          onCheckedChange={(checked) => handleSwitchChange(checked, name, isTarget)}
+          className="data-[state=checked]:bg-primary"
+        />
+      </div>
+    );
+  };
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
-      <div className="grid grid-cols-2 gap-4">
-        <div className="space-y-2">
-          <Label htmlFor="name">Bağlantı Adı</Label>
-          <Input
-            id="name"
-            value={formData.name}
-            onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-            placeholder="Örn: Üretim DB"
-          />
-        </div>
-        <div className="space-y-2">
-          <Label htmlFor="host">Sunucu</Label>
-          <Input
-            id="host"
-            value={formData.host}
-            onChange={(e) => setFormData({ ...formData, host: e.target.value })}
-            placeholder="Örn: localhost"
-          />
-        </div>
-        <div className="space-y-2">
-          <Label htmlFor="port">Port</Label>
-          <Input
-            id="port"
-            value={formData.port}
-            onChange={(e) => setFormData({ ...formData, port: e.target.value })}
-            placeholder="Örn: 1433"
-          />
-        </div>
-        <div className="space-y-2">
-          <Label htmlFor="dbName">Veritabanı</Label>
-          <Input
-            id="dbName"
-            value={formData.dbName}
-            onChange={(e) => setFormData({ ...formData, dbName: e.target.value })}
-            placeholder="Veritabanı adı"
-          />
-        </div>
-        <div className="space-y-2">
-          <Label htmlFor="userName">Kullanıcı Adı</Label>
-          <Input
-            id="userName"
-            value={formData.userName}
-            onChange={(e) => setFormData({ ...formData, userName: e.target.value })}
-            placeholder="Kullanıcı adı"
-          />
-        </div>
-        <div className="space-y-2">
-          <Label htmlFor="password">Şifre</Label>
-          <Input
-            id="password"
-            type="password"
-            value={formData.password}
-            onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-            placeholder="••••••••"
-          />
-        </div>
-        <div className="space-y-2">
-          <Label htmlFor="tenantId">Tenant ID</Label>
-          <Input
-            id="tenantId"
-            value={formData.tenantId}
-            onChange={(e) => setFormData({ ...formData, tenantId: e.target.value })}
-            placeholder="Tenant ID"
-          />
-        </div>
-        <div className="space-y-2">
-          <Label htmlFor="connectTimeout">Bağlantı Zaman Aşımı (ms)</Label>
-          <Input
-            id="connectTimeout"
-            type="number"
-            value={formData.connectTimeout}
-            onChange={(e) => setFormData({ ...formData, connectTimeout: parseInt(e.target.value) })}
-            placeholder="30000"
-          />
-        </div>
-        <div className="space-y-2 col-span-2">
-          <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-8">
-            <div className="flex items-center space-x-2">
-              <Switch
-                id="trustServerCertificate"
-                checked={formData.trustServerCertificate}
-                onCheckedChange={(checked) => setFormData({ ...formData, trustServerCertificate: checked })}
-              />
-              <Label htmlFor="trustServerCertificate">Sunucu Sertifikasına Güven</Label>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {/* Kaynak Bağlantı */}
+        <div>
+          <div className="flex items-center mb-3">
+            <DatabaseIcon className="h-4 w-4 mr-1.5 text-primary" />
+            <h3 className="text-sm font-medium">Kaynak Veritabanı</h3>
+          </div>
+          <div className="space-y-1">
+            {renderFormField('Bağlantı Adı', 'name', formData.name || '', 'text', false, 'Örn: Üretim Veritabanı')}
+            {renderFormField('Firma ID', 'tenantId', formData.tenantId || '', 'text', false, 'Örn: firma1')}
+            
+            <div className="grid grid-cols-2 gap-3">
+              {renderFormField('Sunucu', 'host', formData.host || '', 'text', false, 'Örn: localhost')}
+              {renderFormField('Port', 'port', formData.port || '', 'number', false, 'Örn: 1433')}
             </div>
-            <div className="flex items-center space-x-2">
-              <Switch
-                id="encrypt"
-                checked={formData.encrypt}
-                onCheckedChange={(checked) => setFormData({ ...formData, encrypt: checked })}
-              />
-              <Label htmlFor="encrypt">Şifreleme</Label>
+            
+            {renderFormField('Veritabanı', 'dbName', formData.dbName || '', 'text', false, 'Örn: master')}
+            {renderFormField('Kullanıcı Adı', 'userName', formData.userName || '', 'text', false, 'Örn: sa')}
+            {renderFormField('Şifre', 'password', formData.password || '', 'password', false, '••••••••')}
+            
+            <div className="bg-muted/30 p-2 rounded-md">
+              <div className="text-xs font-medium mb-1.5">Gelişmiş Ayarlar</div>
+              <div className="space-y-2">
+                {renderSwitchField('Sertifikayı Doğrula', 'trustServerCertificate', formData.trustServerCertificate || false)}
+                {renderSwitchField('Şifrele', 'encrypt', formData.encrypt || false)}
+                {renderFormField('Bağlantı Zaman Aşımı (ms)', 'connectTimeout', formData.connectTimeout || 15000, 'number')}
+              </div>
+            </div>
+            
+            {testResults && renderTestResult(testResults.source)}
+          </div>
+        </div>
+
+        {/* Hedef Bağlantı */}
+        <div>
+          <div className="flex items-center justify-between mb-3">
+            <div className="flex items-center">
+              <DatabaseIcon className="h-4 w-4 mr-1.5 text-primary" />
+              <h3 className="text-sm font-medium">Hedef Veritabanı</h3>
             </div>
             <div className="flex items-center space-x-2">
               <Switch
                 id="sameSourceAndTarget"
-                checked={formData.sameSourceAndTarget}
-                onCheckedChange={(checked) => setFormData({ ...formData, sameSourceAndTarget: checked })}
+                name="sameSourceAndTarget"
+                checked={formData.sameSourceAndTarget || false}
+                onCheckedChange={(checked) => handleSwitchChange(checked, 'sameSourceAndTarget')}
+                className="data-[state=checked]:bg-primary"
               />
-              <Label htmlFor="sameSourceAndTarget">Kaynak ve Hedef Veritabanı Aynı</Label>
+              <Label 
+                htmlFor="sameSourceAndTarget"
+                className="text-xs cursor-pointer"
+              >
+                Kaynak ile aynı
+              </Label>
             </div>
           </div>
+
+          {!formData.sameSourceAndTarget ? (
+            <div className="space-y-1">
+              {renderFormField('Bağlantı Adı', 'name', targetFormData.name || '', 'text', true, 'Örn: Test Veritabanı')}
+              {renderFormField('Firma ID', 'tenantId', targetFormData.tenantId || '', 'text', true, 'Örn: firma1')}
+              
+              <div className="grid grid-cols-2 gap-3">
+                {renderFormField('Sunucu', 'host', targetFormData.host || '', 'text', true, 'Örn: localhost')}
+                {renderFormField('Port', 'port', targetFormData.port || '', 'number', true, 'Örn: 1433')}
+              </div>
+              
+              {renderFormField('Veritabanı', 'dbName', targetFormData.dbName || '', 'text', true, 'Örn: master')}
+              {renderFormField('Kullanıcı Adı', 'userName', targetFormData.userName || '', 'text', true, 'Örn: sa')}
+              {renderFormField('Şifre', 'password', targetFormData.password || '', 'password', true, '••••••••')}
+              
+              <div className="bg-muted/30 p-2 rounded-md">
+                <div className="text-xs font-medium mb-1.5">Gelişmiş Ayarlar</div>
+                <div className="space-y-2">
+                  {renderSwitchField('Sertifikayı Doğrula', 'trustServerCertificate', targetFormData.trustServerCertificate || false, true)}
+                  {renderSwitchField('Şifrele', 'encrypt', targetFormData.encrypt || false, true)}
+                  {renderFormField('Bağlantı Zaman Aşımı (ms)', 'connectTimeout', targetFormData.connectTimeout || 15000, 'number', true)}
+                </div>
+              </div>
+              
+              {testResults && testResults.target && renderTestResult(testResults.target)}
+            </div>
+          ) : (
+            <div className="flex items-center justify-center h-full border border-dashed rounded-md p-4 bg-muted/20">
+              <p className="text-xs text-muted-foreground">Kaynak veritabanı aynı zamanda hedef olarak kullanılacak.</p>
+            </div>
+          )}
         </div>
       </div>
 
-      <div className="mt-4 pt-4 border-t">
-        <h3 className="text-base font-medium mb-3">Hedef Veritabanı Bilgileri</h3>
-        <div className="grid grid-cols-2 gap-3">
-          <div className="space-y-1.5">
-            <Label htmlFor="targetName" className="text-sm">Bağlantı Adı</Label>
-            <Input
-              id="targetName"
-              value={targetFormData.name}
-              onChange={(e) => setTargetFormData({ ...targetFormData, name: e.target.value })}
-              placeholder="Örn: Hedef DB"
-              className="h-8"
-            />
-          </div>
-          <div className="space-y-1.5">
-            <Label htmlFor="targetHost" className="text-sm">Sunucu</Label>
-            <Input
-              id="targetHost"
-              value={targetFormData.host}
-              onChange={(e) => setTargetFormData({ ...targetFormData, host: e.target.value })}
-              placeholder="Örn: localhost"
-              className="h-8"
-            />
-          </div>
-          <div className="space-y-1.5">
-            <Label htmlFor="targetPort" className="text-sm">Port</Label>
-            <Input
-              id="targetPort"
-              value={targetFormData.port}
-              onChange={(e) => setTargetFormData({ ...targetFormData, port: e.target.value })}
-              placeholder="Örn: 1433"
-              className="h-8"
-            />
-          </div>
-          <div className="space-y-1.5">
-            <Label htmlFor="targetDbName" className="text-sm">Veritabanı</Label>
-            <Input
-              id="targetDbName"
-              value={targetFormData.dbName}
-              onChange={(e) => setTargetFormData({ ...targetFormData, dbName: e.target.value })}
-              placeholder="Veritabanı adı"
-              className="h-8"
-            />
-          </div>
-          <div className="space-y-1.5">
-            <Label htmlFor="targetUserName" className="text-sm">Kullanıcı Adı</Label>
-            <Input
-              id="targetUserName"
-              value={targetFormData.userName}
-              onChange={(e) => setTargetFormData({ ...targetFormData, userName: e.target.value })}
-              placeholder="Kullanıcı adı"
-              className="h-8"
-            />
-          </div>
-          <div className="space-y-1.5">
-            <Label htmlFor="targetPassword" className="text-sm">Şifre</Label>
-            <Input
-              id="targetPassword"
-              type="password"
-              value={targetFormData.password}
-              onChange={(e) => setTargetFormData({ ...targetFormData, password: e.target.value })}
-              placeholder="••••••••"
-              className="h-8"
-            />
-          </div>
-          <div className="space-y-1.5">
-            <Label htmlFor="targetTenantId" className="text-sm">Tenant ID</Label>
-            <Input
-              id="targetTenantId"
-              value={targetFormData.tenantId}
-              onChange={(e) => setTargetFormData({ ...targetFormData, tenantId: e.target.value })}
-              placeholder="Tenant ID"
-              className="h-8"
-              disabled={true}
-            />
-          </div>
-          <div className="space-y-1.5">
-            <Label htmlFor="targetConnectTimeout" className="text-sm">Bağlantı Zaman Aşımı (ms)</Label>
-            <Input
-              id="targetConnectTimeout"
-              type="number"
-              value={targetFormData.connectTimeout}
-              onChange={(e) => setTargetFormData({ ...targetFormData, connectTimeout: parseInt(e.target.value) })}
-              placeholder="30000"
-              className="h-8"
-            />
-          </div>
-          <div className="space-y-1.5 col-span-2">
-            <div className="flex flex-wrap gap-4">
-              <div className="flex items-center space-x-2">
-                <Switch
-                  id="targetTrustServerCertificate"
-                  checked={targetFormData.trustServerCertificate}
-                  onCheckedChange={(checked) => setTargetFormData({ ...targetFormData, trustServerCertificate: checked })}
-                />
-                <Label htmlFor="targetTrustServerCertificate" className="text-sm">Sunucu Sertifikasına Güven</Label>
-              </div>
-              <div className="flex items-center space-x-2">
-                <Switch
-                  id="targetEncrypt"
-                  checked={targetFormData.encrypt}
-                  onCheckedChange={(checked) => setTargetFormData({ ...targetFormData, encrypt: checked })}
-                />
-                <Label htmlFor="targetEncrypt" className="text-sm">Şifreleme</Label>
-              </div>
-            </div>
-          </div>
+      {validationErrors.length > 0 && (
+        <div className="bg-red-50 border border-red-200 rounded-md p-2">
+          <ul className="text-xs text-red-700 list-disc pl-5">
+            {validationErrors.map((error, index) => (
+              <li key={index}>{error}</li>
+            ))}
+          </ul>
         </div>
-      </div>
+      )}
 
-      <div className="flex flex-col sm:flex-row sm:justify-between gap-2 sm:gap-2 pt-2">
-        <Button
-          type="button"
-          variant="outline"
-          onClick={handleTest}
-          disabled={isSaving || isTesting || !canTestSourceConnection || (!formData.sameSourceAndTarget && !canTestTargetConnection)}
-          className="w-full sm:w-auto"
+      <div className="flex justify-end gap-2 pt-2">
+        <Button 
+          type="button" 
+          variant="outline" 
+          onClick={onCancel}
+          className="h-8 text-xs px-3"
+        >
+          İptal
+        </Button>
+        <Button 
+          type="button" 
+          variant="outline" 
+          onClick={testConnection}
+          disabled={isTesting}
+          className="h-8 text-xs px-3"
         >
           {isTesting ? (
             <>
-              <Loader2Icon className="mr-2 h-4 w-4 animate-spin" />
-              Test Ediliyor...
+              <Loader2Icon className="h-3 w-3 mr-1.5 animate-spin" />
+              Test Ediliyor
             </>
           ) : (
-            <>
-              <DatabaseIcon className="mr-2 h-4 w-4" />
-              Bağlantıyı Test Et
-            </>
+            'Bağlantıları Test Et'
           )}
         </Button>
-        <div className="flex gap-2">
-          <Button 
-            type="button" 
-            variant="outline" 
-            onClick={onCancel} 
-            disabled={isSaving || isTesting}
-            className="flex-1 sm:flex-none"
-          >
-            İptal
-          </Button>
-          <Button 
-            type="submit" 
-            disabled={isSaving || isTesting}
-            className="flex-1 sm:flex-none"
-          >
-            {isSaving ? (
-              <>
-                <Loader2Icon className="mr-2 h-4 w-4 animate-spin" />
-                Kaydediliyor...
-              </>
-            ) : (
-              'Kaydet'
-            )}
-          </Button>
-        </div>
-      </div>
-
-      {testResults && (
-        <div className="mt-4 space-y-3">
-          <div className={`p-3 rounded-md ${testResults.source.success ? 'bg-green-500/10' : 'bg-red-500/10'}`}>
-            <div className="flex items-start">
-              {testResults.source.success ? (
-                <CheckCircleIcon className="h-5 w-5 text-green-500 mr-2 mt-0.5 flex-shrink-0" />
-              ) : (
-                <XCircleIcon className="h-5 w-5 text-red-500 mr-2 mt-0.5 flex-shrink-0" />
-              )}
-              <div>
-                <p className="font-medium text-sm mb-0.5">Kaynak Veritabanı</p>
-                <p className={`text-sm ${testResults.source.success ? 'text-green-600' : 'text-red-600'}`}>
-                  {testResults.source.message}
-                </p>
-              </div>
-            </div>
-          </div>
-
-          {testResults.target && (
-            <div className={`p-3 rounded-md ${testResults.target.success ? 'bg-green-500/10' : 'bg-red-500/10'}`}>
-              <div className="flex items-start">
-                {testResults.target.success ? (
-                  <CheckCircleIcon className="h-5 w-5 text-green-500 mr-2 mt-0.5 flex-shrink-0" />
-                ) : (
-                  <XCircleIcon className="h-5 w-5 text-red-500 mr-2 mt-0.5 flex-shrink-0" />
-                )}
-                <div>
-                  <p className="font-medium text-sm mb-0.5">Hedef Veritabanı</p>
-                  <p className={`text-sm ${testResults.target.success ? 'text-green-600' : 'text-red-600'}`}>
-                    {testResults.target.message}
-                  </p>
-                </div>
-              </div>
-            </div>
+        <Button 
+          type="submit" 
+          disabled={isSaving}
+          className="h-8 text-xs px-3"
+        >
+          {isSaving ? (
+            <>
+              <Loader2Icon className="h-3 w-3 mr-1.5 animate-spin" />
+              Kaydediliyor
+            </>
+          ) : (
+            'Kaydet'
           )}
-        </div>
-      )}
-
-      {validationErrors.length > 0 && (
-        <div className="mt-4 p-3 rounded-md bg-red-500/10 border border-red-200">
-          <div className="flex items-start">
-            <XCircleIcon className="h-5 w-5 text-red-500 mr-2 mt-0.5 flex-shrink-0" />
-            <div>
-              <p className="font-medium text-sm mb-1">Doğrulama Hataları</p>
-              <ul className="list-disc pl-5 space-y-1">
-                {validationErrors.map((error, index) => (
-                  <li key={index} className="text-sm text-red-600">{error}</li>
-                ))}
-              </ul>
-            </div>
-          </div>
-        </div>
-      )}
+        </Button>
+      </div>
     </form>
   );
 }

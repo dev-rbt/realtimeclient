@@ -128,6 +128,7 @@ export interface TenantMetrics {
 
 export interface TenantInfo {
   tenantId: string;
+  tenantName: string;
   activeBranches: number;
   passiveBranches: number;
 }

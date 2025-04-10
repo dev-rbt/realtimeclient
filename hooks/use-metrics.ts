@@ -13,8 +13,13 @@ function useMetricsData() {
     const fetchTenants = async () => {
         try {
             const response = await api.get<TenantInfo[]>('/system/tenants');
-            setTenants(response.data);
-            return response.data;
+            // API'dan gelen verilere tenantName ekle (eğer yoksa)
+            const tenantsWithName = response.data.map(tenant => ({
+                ...tenant,
+                tenantName: tenant.tenantName || tenant.tenantId // tenantName yoksa tenantId kullan
+            }));
+            setTenants(tenantsWithName);
+            return tenantsWithName;
         } catch (error) {
             console.error('Error fetching tenants:', error);
             return [];
