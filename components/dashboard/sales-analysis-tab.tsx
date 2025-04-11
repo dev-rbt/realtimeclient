@@ -148,8 +148,10 @@ export function SalesAnalysisTab() {
       if (isNaN(date.getTime())) {
         return 'N/A';
       }
-      return date.toLocaleString('tr-TR');
+      // Daha okunabilir bir format kullanıyorum, Türkçe tarih formatı (gün.ay.yıl saat:dakika:saniye)
+      return format(date, 'dd.MM.yyyy HH:mm:ss');
     } catch (error) {
+      console.error('Date formatting error:', error, dateString);
       return 'N/A';
     }
   };
