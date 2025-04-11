@@ -28,7 +28,8 @@ import {
   PanelLeft,
   Layers,
   FileText,
-  RefreshCw
+  RefreshCw,
+  LogOut
 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
@@ -36,6 +37,8 @@ import { Separator } from '@/components/ui/separator';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import axios from 'axios';
+import { useToast } from '@/components/ui/use-toast';
 
 export default function Dashboard({ metrics, error, logs, logsError }: { metrics: SystemMetrics | null, error: string | null, logs: SystemLog[] | null, logsError: string | null }) {
   const [activeRestaurantCount, setActiveRestaurantCount] = useState(0);
@@ -44,6 +47,12 @@ export default function Dashboard({ metrics, error, logs, logsError }: { metrics
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [isClient, setIsClient] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const { toast } = useToast();
+
+  // Set isClient to true when component mounts (client-side only)
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
 
   // SignalR connection check
   useEffect(() => {
@@ -51,11 +60,6 @@ export default function Dashboard({ metrics, error, logs, logsError }: { metrics
       console.error('SignalR connection error in Dashboard:', error);
     }
   }, [error]);
-
-  // Client-side rendering check
-  useEffect(() => {
-    setIsClient(true);
-  }, []);
 
   // Responsive sidebar
   useEffect(() => {
@@ -81,6 +85,25 @@ export default function Dashboard({ metrics, error, logs, logsError }: { metrics
     setTimeout(() => {
       setIsRefreshing(false);
     }, 1500);
+  };
+
+  // Logout function
+  const handleLogout = async () => {
+    try {
+      await axios.post('/api/logout');
+      toast({
+        title: 'Çıkış Başarılı',
+        description: 'Başarıyla çıkış yapıldı.',
+      });
+      window.location.href = '/login';
+    } catch (error) {
+      console.error('Logout error:', error);
+      toast({
+        title: 'Çıkış Yapılamadı',
+        description: 'Çıkış yapılırken bir hata oluştu.',
+        variant: 'destructive',
+      });
+    }
   };
 
   // Render tab content
@@ -388,6 +411,14 @@ export default function Dashboard({ metrics, error, logs, logsError }: { metrics
                     <p className="truncate text-sm font-medium">Admin</p>
                     <p className="truncate text-xs text-muted-foreground">admin@robotpos.com</p>
                   </div>
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    className="hidden md:flex ml-auto text-muted-foreground hover:text-destructive"
+                    onClick={handleLogout}
+                  >
+                    <LogOut className="h-4 w-4" />
+                  </Button>
                 </div>
               </TooltipTrigger>
               <TooltipContent side="right" className="md:hidden">
@@ -398,6 +429,19 @@ export default function Dashboard({ metrics, error, logs, logsError }: { metrics
               </TooltipContent>
             </Tooltip>
           </TooltipProvider>
+
+          {/* Logout Button for Mobile */}
+          <div className="md:hidden mt-2">
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              className="w-full flex items-center justify-center text-muted-foreground hover:text-destructive"
+              onClick={handleLogout}
+            >
+              <LogOut className="h-4 w-4 mr-2" />
+              <span className="text-sm">Çıkış Yap</span>
+            </Button>
+          </div>
         </div>
       </div>
 

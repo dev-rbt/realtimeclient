@@ -18,11 +18,16 @@ import {
   Menu,
   X,
   ChevronRight,
-  ChevronLeft
+  ChevronLeft,
+  LogOut,
+  User
 } from "lucide-react";
 import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { useRouter } from "next/router";
+import axios from "axios";
+import { useToast } from "@/components/ui/use-toast";
 
 interface SidebarProps {
   activeTab: string;
@@ -34,6 +39,8 @@ interface SidebarProps {
 export function Sidebar({ activeTab, onTabChange, collapsed, setCollapsed }: SidebarProps) {
   const { theme, setTheme } = useTheme();
   const [isMobile, setIsMobile] = useState(false);
+  const router = useRouter();
+  const { toast } = useToast();
 
   // Check if mobile on mount and when window resizes
   useEffect(() => {
@@ -62,6 +69,25 @@ export function Sidebar({ activeTab, onTabChange, collapsed, setCollapsed }: Sid
     onTabChange(value);
     if (isMobile) {
       setCollapsed(true);
+    }
+  };
+
+  // Logout function
+  const handleLogout = async () => {
+    try {
+      await axios.post('/api/logout');
+      toast({
+        title: 'Çıkış Başarılı',
+        description: 'Başarıyla çıkış yapıldı.',
+      });
+      router.push('/login');
+    } catch (error) {
+      console.error('Logout error:', error);
+      toast({
+        title: 'Çıkış Yapılamadı',
+        description: 'Çıkış yapılırken bir hata oluştu.',
+        variant: 'destructive',
+      });
     }
   };
 
@@ -188,7 +214,7 @@ export function Sidebar({ activeTab, onTabChange, collapsed, setCollapsed }: Sid
         </div>
 
         {/* Footer */}
-        <div className="p-3 border-t">
+        <div className="p-3 border-t space-y-2">
           <TooltipProvider delayDuration={collapsed ? 100 : 1000}>
             <Tooltip>
               <TooltipTrigger asChild>
@@ -201,21 +227,39 @@ export function Sidebar({ activeTab, onTabChange, collapsed, setCollapsed }: Sid
                   {theme === "dark" ? (
                     <>
                       <Sun className="h-5 w-5" />
-                      {!collapsed && <span className="ml-3">Açık Tema</span>}
+                      {!collapsed && <span className="ml-2">Açık Tema</span>}
                     </>
                   ) : (
                     <>
                       <Moon className="h-5 w-5" />
-                      {!collapsed && <span className="ml-3">Koyu Tema</span>}
+                      {!collapsed && <span className="ml-2">Koyu Tema</span>}
                     </>
                   )}
                 </Button>
               </TooltipTrigger>
-              {collapsed && (
-                <TooltipContent side="right">
-                  {theme === "dark" ? "Açık Tema" : "Koyu Tema"}
-                </TooltipContent>
-              )}
+              <TooltipContent side="right">
+                <span>{theme === "dark" ? "Açık Tema" : "Koyu Tema"}</span>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+
+          {/* Account/Logout Button */}
+          <TooltipProvider delayDuration={collapsed ? 100 : 1000}>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size={collapsed ? "icon" : "default"}
+                  className="w-full justify-start text-destructive hover:text-destructive hover:bg-destructive/10"
+                  onClick={handleLogout}
+                >
+                  <LogOut className="h-5 w-5" />
+                  {!collapsed && <span className="ml-2">Çıkış Yap</span>}
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent side="right">
+                <span>Çıkış Yap</span>
+              </TooltipContent>
             </Tooltip>
           </TooltipProvider>
         </div>
