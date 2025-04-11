@@ -149,7 +149,7 @@ export function SalesAnalysisTab() {
         return 'N/A';
       }
       // Daha okunabilir bir format kullanıyorum, Türkçe tarih formatı (gün.ay.yıl saat:dakika:saniye)
-      return format(date, 'dd.MM.yyyy HH:mm:ss');
+      return date.toString();
     } catch (error) {
       console.error('Date formatting error:', error, dateString);
       return 'N/A';
