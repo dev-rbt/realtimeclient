@@ -25,7 +25,6 @@ import {
 import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { useRouter } from "next/router";
 import axios from "axios";
 import { useToast } from "@/components/ui/use-toast";
 
@@ -39,8 +38,20 @@ interface SidebarProps {
 export function Sidebar({ activeTab, onTabChange, collapsed, setCollapsed }: SidebarProps) {
   const { theme, setTheme } = useTheme();
   const [isMobile, setIsMobile] = useState(false);
-  const router = useRouter();
+  const [mounted, setMounted] = useState(false);
   const { toast } = useToast();
+  const [router, setRouter] = useState<any>(null);
+
+  // Client-side only
+  useEffect(() => {
+    setMounted(true);
+    // Initialize router only on client side
+    if (typeof window !== 'undefined') {
+      import('next/router').then((mod) => {
+        setRouter(mod.useRouter());
+      });
+    }
+  }, []);
 
   // Check if mobile on mount and when window resizes
   useEffect(() => {
@@ -80,7 +91,8 @@ export function Sidebar({ activeTab, onTabChange, collapsed, setCollapsed }: Sid
         title: 'Çıkış Başarılı',
         description: 'Başarıyla çıkış yapıldı.',
       });
-      router.push('/login');
+      // Use window.location instead of router for navigation
+      window.location.href = '/login';
     } catch (error) {
       console.error('Logout error:', error);
       toast({
