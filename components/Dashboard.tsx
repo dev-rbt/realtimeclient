@@ -7,6 +7,7 @@ import { SettingsTab } from './dashboard/settings-tab';
 import { QueriesTab } from './dashboard/queries-tab';
 import { CompanyCards } from "./dashboard/company-cards";
 import { AnalyseTab } from './dashboard/analyse-tab';
+import { SalesAnalysisTab } from './dashboard/sales-analysis-tab';
 import { RestaurantsTable } from './tables/restaurants-table';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
@@ -286,6 +287,8 @@ export default function Dashboard({ metrics, error, logs, logsError }: { metrics
         return <RestaurantsTable />;
       case "analyse":
         return <AnalyseTab />;
+      case "sales":
+        return <SalesAnalysisTab />;
       case "queries":
         return <QueriesTab />;
       case "settings":
@@ -298,6 +301,7 @@ export default function Dashboard({ metrics, error, logs, logsError }: { metrics
   const menuItems = [
     { id: "overview", label: "Genel Bakış", icon: <Home className="h-5 w-5" /> },
     { id: "analyse", label: "Veri Analizi", icon: <BarChart3 className="h-5 w-5" /> },
+    { id: "sales", label: "Eski Satış Veri Analizi", icon: <FileText className="h-5 w-5" /> },
     { id: "branches", label: "Şubeler", icon: <Building2 className="h-5 w-5" /> },
     { id: "queries", label: "Sorgular", icon: <Database className="h-5 w-5" /> },
     { id: "settings", label: "Ayarlar", icon: <Settings className="h-5 w-5" /> },
