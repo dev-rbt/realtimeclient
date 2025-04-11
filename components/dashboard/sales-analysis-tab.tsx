@@ -143,13 +143,29 @@ export function SalesAnalysisTab() {
     if (!dateString) return 'N/A';
     
     try {
+      // Tarih string'ini parse et
       const date = new Date(dateString);
+      
       // Check if date is valid
       if (isNaN(date.getTime())) {
         return 'N/A';
       }
-      // Daha okunabilir bir format kullanıyorum, Türkçe tarih formatı (gün.ay.yıl saat:dakika:saniye)
-      return date.toString();
+      
+      // Tarih string'ini direkt olarak parse edip, saat dilimi dönüşümü yapmadan formatlıyoruz
+      // Bu şekilde API'den gelen tarih değeri olduğu gibi korunacak
+      const isoDate = dateString.replace('Z', ''); // Z varsa kaldır (UTC işareti)
+      const [datePart, timePart] = isoDate.split('T');
+      
+      if (datePart && timePart) {
+        const [year, month, day] = datePart.split('-');
+        const [hour, minute, secondWithMs] = timePart.split(':');
+        const second = secondWithMs ? secondWithMs.split('.')[0] : '00';
+        
+        return `${day}.${month}.${year} ${hour}:${minute}:${second}`;
+      }
+      
+      // Eğer ISO formatında değilse, date-fns kullanarak formatla
+      return format(date, 'dd.MM.yyyy HH:mm:ss');
     } catch (error) {
       console.error('Date formatting error:', error, dateString);
       return 'N/A';
