@@ -2,9 +2,9 @@
 
 import { useState, useEffect } from 'react';
 import { useApi } from '@/hooks/use-api';
-import { format, isWithinInterval, parseISO, isAfter, isBefore, isSameDay, startOfDay, endOfDay } from 'date-fns';
+import { format, isWithinInterval, parseISO } from 'date-fns';
 import { tr } from 'date-fns/locale';
-import { Calendar as CalendarIcon, Eye, Search, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, ArrowDown, ArrowUp } from 'lucide-react';
+import { Calendar as CalendarIcon, Eye, Search, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, ArrowDown, ArrowUp, Clock, User, Users, FileText, CreditCard, ChevronDown, Banknote } from 'lucide-react';
 import { useToast } from '@/components/ui/use-toast';
 import { Button } from '@/components/ui/button';
 import { Calendar } from '@/components/ui/calendar';
@@ -36,7 +36,10 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
+  DialogDescription,
 } from '@/components/ui/dialog';
+import { Badge } from '@/components/ui/badge';
+import { Collapsible, CollapsibleTrigger, CollapsibleContent } from '@/components/ui/collapsible';
 
 interface SalesData {
   id: string;
@@ -313,16 +316,31 @@ export function SalesAnalysisTab() {
     setDetailsError(null);
     
     try {
+      // API çağrısını düzeltiyorum, hash parametresini ekliyorum
       const response = await api.get(`/system/oldsalesanalyze/details`, {
         params: {
           tenantId: item.tenantId,
           branchId: item.branchId,
           documentId: item.documentId,
-          documentName: item.documentName
+          documentName: item.documentName,
+          hash: item.hash, // Hash parametresini ekliyorum
+          primaryKeyName: item.primaryKeyName,
+          primaryKeyField: item.primaryKeyField
         }
       });
       
-      setDetailsData(response.data);
+      // Gelen veriyi doğru şekilde işliyorum
+      // TypeScript hatalarını önlemek için any tipini kullanıyoruz
+      const responseData: any = response.data;
+      
+      // data alanı içindeki verileri kullanıyoruz
+      if (responseData && responseData.data) {
+        setDetailsData(responseData.data);
+      } else {
+        setDetailsData(responseData);
+      }
+      
+      console.log("Detay verisi:", responseData);
     } catch (err) {
       console.error('Error fetching details:', err);
       setDetailsError('Detaylı veri yüklenirken bir hata oluştu.');
@@ -597,64 +615,268 @@ export function SalesAnalysisTab() {
       </div>
 
       <Dialog open={detailsOpen} onOpenChange={setDetailsOpen}>
-        <DialogContent className="max-w-4xl">
+        <DialogContent className="max-w-4xl max-h-[90vh] flex flex-col">
           <DialogHeader>
-            <DialogTitle>Satış Detayları</DialogTitle>
+            <DialogTitle className="text-xl text-primary font-semibold">
+              {selectedItem?.primaryKeyField && `Sipariş #${selectedItem.primaryKeyField}`}
+              {selectedItem?.tableNumber && (
+                <Badge variant="outline" className="ml-2">
+                  Masa {selectedItem.tableNumber}
+                </Badge>
+              )}
+            </DialogTitle>
+            <DialogDescription>
+              Sipariş detaylarını görüntülüyorsunuz.
+            </DialogDescription>
           </DialogHeader>
-          {selectedItem && (
-            <div className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <p className="text-sm font-medium text-muted-foreground">Firma Kodu</p>
-                  <p className="text-base">{selectedItem.tenantId}</p>
-                </div>
-                <div>
-                  <p className="text-sm font-medium text-muted-foreground">Şube ID</p>
-                  <p className="text-base">{selectedItem.branchId}</p>
-                </div>
-                <div>
-                  <p className="text-sm font-medium text-muted-foreground">Sipariş Numarası</p>
-                  <p className="text-base">{selectedItem.primaryKeyField}</p>
-                </div>
-                <div>
-                  <p className="text-sm font-medium text-muted-foreground">Referans Kodu</p>
-                  <p className="text-base">{selectedItem.referenceCode}</p>
-                </div>
-                <div>
-                  <p className="text-sm font-medium text-muted-foreground">Sipariş Tarihi</p>
-                  <p className="text-base">{formatDate(selectedItem.orderDateTime)}</p>
-                </div>
-                <div>
-                  <p className="text-sm font-medium text-muted-foreground">Veri Gelme Tarihi</p>
-                  <p className="text-base">{formatDate(selectedItem.createdAt)}</p>
-                </div>
+
+          {/* Scrollable Content Area */}
+          <div className="flex-1 overflow-y-auto pr-2">
+            {loadingDetails ? (
+              <div className="flex flex-col items-center justify-center p-8">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mb-2"></div>
+                <p className="text-muted-foreground">Veri yükleniyor...</p>
               </div>
-              
-              <div className="border-t pt-4">
-                <p className="text-sm font-medium text-muted-foreground mb-2">Detaylı Veri</p>
-                {loadingDetails ? (
-                  <div className="flex flex-col items-center justify-center p-4 h-[400px]">
-                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mb-2"></div>
-                    <p className="text-sm text-muted-foreground">Veri yükleniyor...</p>
+            ) : detailsError ? (
+              <div className="p-4 text-center">
+                <p className="text-destructive">Hata: {detailsError}</p>
+              </div>
+            ) : detailsData ? (
+              <div className="space-y-6">
+                {/* Order Info Cards */}
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  {/* Order Date Card */}
+                  <div className="bg-muted/30 rounded-lg p-4">
+                    <div className="flex items-center gap-2 mb-2">
+                      <Clock className="h-5 w-5 text-primary" />
+                      <h3 className="text-sm font-medium text-muted-foreground">Sipariş Tarihi</h3>
+                    </div>
+                    <p className="text-base font-medium">
+                      {detailsData?.OrderHeaders?.[0]?.OrderDateTime 
+                        ? format(new Date(detailsData.OrderHeaders[0].OrderDateTime), 'dd.MM.yyyy')
+                        : format(new Date(selectedItem.orderDateTime), 'dd.MM.yyyy')}
+                    </p>
+                    <p className="text-sm text-muted-foreground">
+                      {detailsData?.OrderHeaders?.[0]?.OrderDateTime 
+                        ? format(new Date(detailsData.OrderHeaders[0].OrderDateTime), 'HH:mm:ss')
+                        : format(new Date(selectedItem.orderDateTime), 'HH:mm:ss')}
+                    </p>
                   </div>
-                ) : detailsError ? (
-                  <div className="p-4 text-center">
-                    <p className="text-red-500">{detailsError}</p>
+
+                  {/* Data Arrival Date Card */}
+                  <div className="bg-muted/30 rounded-lg p-4">
+                    <div className="flex items-center gap-2 mb-2">
+                      <FileText className="h-5 w-5 text-primary" />
+                      <h3 className="text-sm font-medium text-muted-foreground">Veri Gelme Tarihi</h3>
+                    </div>
+                    <p className="text-base font-medium">
+                      {format(new Date(selectedItem.createdAt), 'dd.MM.yyyy')}
+                    </p>
+                    <p className="text-sm text-muted-foreground">
+                      {format(new Date(selectedItem.createdAt), 'HH:mm:ss')}
+                    </p>
                   </div>
-                ) : detailsData ? (
-                  <div className="max-h-[400px] overflow-auto border rounded-md">
-                    <pre className="bg-muted p-4 text-xs whitespace-pre-wrap">
-                      {JSON.stringify(detailsData, null, 2)}
-                    </pre>
+
+                  {/* Personnel Card */}
+                  <div className="bg-muted/30 rounded-lg p-4">
+                    <div className="flex items-center gap-2 mb-2">
+                      <User className="h-5 w-5 text-primary" />
+                      <h3 className="text-sm font-medium text-muted-foreground">Personel</h3>
+                    </div>
+                    <p className="text-base font-medium">
+                      {detailsData?.OrderHeaders?.[0]?.EmployeeName || 'Bilinmiyor'}
+                    </p>
                   </div>
-                ) : (
-                  <div className="p-4 text-center">
-                    <p className="text-muted-foreground">Detaylı veri bulunamadı.</p>
+                </div>
+
+                {/* Customer Count Card */}
+                <div className="bg-muted/30 rounded-lg p-4">
+                  <div className="flex items-center gap-2 mb-2">
+                    <Users className="h-5 w-5 text-primary" />
+                    <h3 className="text-sm font-medium text-muted-foreground">Kişi Sayısı</h3>
+                  </div>
+                  <p className="text-base font-medium">
+                    {detailsData?.OrderHeaders?.[0]?.GuestNumber || '1'} Kişi
+                  </p>
+                </div>
+
+                {/* Products Section */}
+                <div className="border-t pt-4">
+                  <div className="flex items-center gap-2 mb-4">
+                    <FileText className="h-5 w-5 text-primary" />
+                    <h3 className="font-medium">Ürünler</h3>
+                  </div>
+                  
+                  <div className="max-h-[300px] overflow-auto border rounded-md bg-muted/30">
+                    {detailsData?.OrderTransactions?.length > 0 ? (
+                      <div className="divide-y">
+                        {detailsData.OrderTransactions
+                          .filter((item: any) => item.MenuItemText && item.ExtendedPrice > 0) // Sadece gerçek ürünleri göster
+                          .map((item: any, index: number) => (
+                          <div key={index} className="p-4 hover:bg-muted/50">
+                            <div className="flex justify-between items-start">
+                              <div>
+                                <div className="font-medium">{item.MenuItemText}</div>
+                                {item.Notes && (
+                                  <div className="text-sm text-muted-foreground mt-1">{item.Notes}</div>
+                                )}
+                                <div className="text-xs text-muted-foreground mt-1">
+                                  {new Date(item.TransactionDateTime).toLocaleTimeString('tr-TR')}
+                                </div>
+                              </div>
+                              <div className="text-right">
+                                <div className="font-medium text-primary">₺{item.ExtendedPrice.toFixed(2)}</div>
+                                <div className="text-sm text-muted-foreground">
+                                  {item.Quantity} x ₺{item.MenuItemUnitPrice.toFixed(2)}
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <div className="p-4 text-center text-muted-foreground">
+                        Ürün bilgisi bulunamadı
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* Payment Section */}
+                {detailsData?.OrderHeaders?.[0] && (
+                  <div className="border-t pt-4">
+                    <div className="flex items-center gap-2 mb-4">
+                      <div className="bg-muted/50 p-2 rounded-full">
+                        <CreditCard className="h-5 w-5 text-primary" />
+                      </div>
+                      <h3 className="font-medium">Ödemeler</h3>
+                    </div>
+                    
+                    <div className="bg-muted/30 rounded-lg p-6">
+                      {detailsData?.OrderPayments?.length > 0 ? (
+                        detailsData.OrderPayments.map((payment: any, index: number) => (
+                          <div key={index} className="mb-6 last:mb-0">
+                            <div className="flex items-center">
+                              <div className="bg-green-100 p-2 rounded-full mr-3">
+                                <Banknote className="h-5 w-5 text-green-600" />
+                              </div>
+                              <div>
+                                <div className="font-medium text-base">NAKİT</div>
+                                <div className="text-xs text-muted-foreground">
+                                  {format(new Date(payment.PaymentDateTime), 'dd/MM/yyyy HH:mm:ss')}
+                                  {detailsData?.OrderHeaders?.[0]?.OrderDateTime && payment.PaymentDateTime && (
+                                    (() => {
+                                      const orderDate = new Date(detailsData.OrderHeaders[0].OrderDateTime);
+                                      const paymentDate = new Date(payment.PaymentDateTime);
+                                      const diffTime = Math.abs(paymentDate.getTime() - orderDate.getTime());
+                                      const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+                                      const diffHours = Math.floor((diffTime % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                                      
+                                      if (diffDays > 0 || diffHours > 0) {
+                                        if (paymentDate > orderDate) {
+                                          return diffDays > 0 
+                                            ? ` (Ödeme Sipariş tarihinden ${diffDays} gün sonra alınmış)` 
+                                            : diffHours > 0 
+                                              ? ` (Ödeme Sipariş tarihinden ${diffHours} saat sonra alınmış)` 
+                                              : '';
+                                        } else {
+                                          return diffDays > 0 
+                                            ? ` (Ödeme Sipariş tarihinden ${diffDays} gün önce alınmış)` 
+                                            : diffHours > 0 
+                                              ? ` (Ödeme Sipariş tarihinden ${diffHours} saat önce alınmış)` 
+                                              : '';
+                                        }
+                                      }
+                                      return '';
+                                    })()
+                                  )}
+                                </div>
+                              </div>
+                              <div className="ml-auto">
+                                <div className="font-medium text-primary">₺{payment.AmountPaid.toFixed(2)}</div>
+                              </div>
+                            </div>
+                          </div>
+                        ))
+                      ) : (
+                        <div className="text-center py-4 text-muted-foreground">
+                          Ödeme yok
+                        </div>
+                      )}
+                    </div>
                   </div>
                 )}
+
+                {/* Raw JSON Data (Hidden by Default) */}
+                <Collapsible className="border-t pt-4">
+                  <CollapsibleTrigger asChild>
+                    <Button variant="outline" className="w-full flex items-center justify-between">
+                      <span>JSON Verisi</span>
+                      <ChevronDown className="h-4 w-4" />
+                    </Button>
+                  </CollapsibleTrigger>
+                  <CollapsibleContent>
+                    <div className="mt-4 max-h-[400px] overflow-auto border rounded-md relative group">
+                      <Button 
+                        variant="outline" 
+                        size="sm" 
+                        className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity z-10"
+                        onClick={() => {
+                          if (detailsData) {
+                            navigator.clipboard.writeText(JSON.stringify(detailsData, null, 2));
+                            toast({
+                              title: "Kopyalandı",
+                              description: "JSON verisi panoya kopyalandı.",
+                            });
+                          }
+                        }}
+                      >
+                        Kopyala
+                      </Button>
+                      <pre className="bg-muted p-4 text-xs whitespace-pre-wrap overflow-x-auto w-full">
+                        {detailsData && JSON.stringify(detailsData, null, 2)}
+                      </pre>
+                    </div>
+                  </CollapsibleContent>
+                </Collapsible>
               </div>
-            </div>
-          )}
+            ) : (
+              <div className="p-4 text-center">
+                <p className="text-muted-foreground">Detaylı veri bulunamadı.</p>
+              </div>
+            )}
+          </div>
+          
+          {/* Fixed Action Buttons */}
+          <div className="border-t mt-4 pt-4 flex justify-end gap-2">
+            <Button variant="outline" onClick={() => setDetailsOpen(false)}>
+              Kapat
+            </Button>
+            <Button 
+              variant="destructive" 
+              onClick={() => {
+                toast({
+                  title: "İşlem Başarılı",
+                  description: "Veri içeri alınmadı.",
+                });
+              }}
+            >
+              Veriyi İçeri Alma
+            </Button>
+            <Button 
+              variant="default"
+              className="bg-green-600 hover:bg-green-700"
+              onClick={() => {
+                // İçeri alma işlemi burada yapılacak
+                toast({
+                  title: "İşlem Başarılı",
+                  description: "Veri içeri alındı.",
+                });
+              }}
+            >
+              Veriyi İçeri Al
+            </Button>
+          </div>
         </DialogContent>
       </Dialog>
     </div>
